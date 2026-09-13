@@ -1,82 +1,93 @@
-<aside class="sidebar d-none d-lg-flex flex-column" id="sidebar">
-    <div class="p-3 border-bottom border-secondary">
+<aside class="pc-sidebar d-none d-lg-flex flex-column" id="sidebar">
+    <div class="pc-sidebar-brand">
         <a href="{{ route('vet.dashboard') }}" class="text-decoration-none d-flex align-items-center">
-            <div class="d-flex align-items-center justify-content-center rounded" style="width:36px;height:36px;background:linear-gradient(135deg,#1a6b3c,#2e9e5a);">
-                <i class="bi bi-shield-check text-white fs-6"></i>
+            <div class="pc-brand-icon">
+                <svg viewBox="0 0 24 24" fill="var(--pc-primary)">
+                    <path d="M12 15.5c-2.6 0-6 1.55-6 3.6 0 1.05.95 1.9 2.13 1.9.98 0 1.7-.5 2.6-.5.6 0 1.02.5 1.27.5s.67-.5 1.27-.5c.9 0 1.62.5 2.6.5 1.18 0 2.13-.85 2.13-1.9 0-2.05-3.4-3.6-6-3.6z"/>
+                    <circle cx="5.2" cy="10.2" r="2.1"/>
+                    <circle cx="9.4" cy="6.4" r="2.1"/>
+                    <circle cx="14.6" cy="6.4" r="2.1"/>
+                    <circle cx="18.8" cy="10.2" r="2.1"/>
+                </svg>
             </div>
-            <span class="text-white fw-semibold ms-2 fs-6">FurShield</span>
+            <div class="ms-2">
+                <div class="pc-brand-title">{{ config('app.name', 'PawCare') }}</div>
+                <div class="pc-brand-sub">{{ __('For a Healthier, Happier Tomorrow') }}</div>
+            </div>
         </a>
     </div>
 
-    <nav class="flex-grow-1 py-3 overflow-auto">
+    <nav class="pc-nav flex-grow-1 overflow-auto">
         <ul class="nav flex-column">
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('vet.dashboard') ? 'active' : '' }}" href="{{ route('vet.dashboard') }}">
-                    <i class="bi bi-speedometer2"></i> {{ __('Dashboard') }}
+                    <i class="bi bi-house-door-fill"></i> {{ __('Dashboard') }}
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}" href="{{ route('profile.edit') }}">
-                    <i class="bi bi-person"></i> {{ __('Profile') }}
-                </a>
-            </li>
-
-            <li class="nav-item mt-2">
-                <small class="text-uppercase text-secondary px-3 fw-semibold" style="font-size:0.7rem;letter-spacing:0.05em;">{{ __('Appointments') }}</small>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('vet.appointments.*') ? 'active' : '' }}" href="{{ route('vet.appointments.index') }}">
-                    <i class="bi bi-calendar-check"></i> {{ __('My Appointments') }}
+                    <i class="bi bi-person"></i> {{ __('My Profile') }}
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('vet.availability.*') ? 'active' : '' }}" href="{{ route('vet.availability.index') }}">
-                    <i class="bi bi-clock"></i> {{ __('Availability') }}
+                    <i class="bi bi-calendar3"></i> {{ __('Availability') }}
                 </a>
             </li>
-
-            <li class="nav-item mt-2">
-                <small class="text-uppercase text-secondary px-3 fw-semibold" style="font-size:0.7rem;letter-spacing:0.05em;">{{ __('Patients') }}</small>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('vet.appointments.*') ? 'active' : '' }}" href="{{ route('vet.appointments.index') }}">
+                    <i class="bi bi-clipboard2-check"></i> {{ __('Appointments') }}
+                </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('vet.patients.*') ? 'active' : '' }}" href="{{ route('vet.patients.index') }}">
-                    <i class="bi bi-heart-pulse"></i> {{ __('My Patients') }}
+                    <i class="bi bi-people"></i> {{ __('My Patients') }}
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('vet.treatments.*') ? 'active' : '' }}" href="{{ route('vet.treatments.index') }}">
-                    <i class="bi bi-clipboard2-pulse"></i> {{ __('Treatments') }}
+                    <i class="bi bi-heart-pulse"></i> {{ __('Treatments') }}
                 </a>
-            </li>
-
-            <li class="nav-item mt-2">
-                <small class="text-uppercase text-secondary px-3 fw-semibold" style="font-size:0.7rem;letter-spacing:0.05em;">{{ __('Account') }}</small>
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('vet.reviews.*') ? 'active' : '' }}" href="{{ route('vet.reviews.index') }}">
-                    <i class="bi bi-star"></i> {{ __('My Reviews') }}
+                    <i class="bi bi-star"></i> {{ __('Reviews') }}
                 </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('vet.notifications.*') ? 'active' : '' }}" href="{{ route('vet.notifications.index') ?? '#' }}">
+                    <i class="bi bi-bell"></i> {{ __('Notifications') }}
+                    @php($unread = $unreadNotificationsCount ?? (Auth::user()->unreadNotifications->count() ?? 0))
+                    @if($unread > 0)
+                        <span class="nav-badge">{{ $unread }}</span>
+                    @endif
+                </a>
+            </li>
+
+            <li class="pc-nav-divider"></li>
+
+            <li class="nav-item">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="nav-link border-0 bg-transparent w-100 text-start">
+                        <i class="bi bi-box-arrow-right"></i> {{ __('Logout') }}
+                    </button>
+                </form>
             </li>
         </ul>
     </nav>
 
-    <div class="p-3 border-top border-secondary">
-        <div class="d-flex align-items-center">
-            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:36px;height:36px;background:linear-gradient(135deg,#0ea5e9,#38bdf8);">
-                <span class="text-white fw-semibold" style="font-size:0.875rem;">{{ substr(Auth::user()->name, 0, 1) }}</span>
-            </div>
-            <div class="ms-2 overflow-hidden">
-                <div class="text-white fw-medium text-truncate" style="font-size:0.875rem;">{{ Auth::user()->name }}</div>
-                <div class="text-secondary text-truncate" style="font-size:0.75rem;">
-                    @if(Auth::user()->status === 'active')
-                        <i class="bi bi-check-circle-fill text-success" style="font-size:0.6rem;"></i> {{ __('Verified Vet') }}
-                    @else
-                        <i class="bi bi-clock-fill text-warning" style="font-size:0.6rem;"></i> {{ __('Pending Verification') }}
-                    @endif
-                </div>
-            </div>
-        </div>
+    <div class="pc-sidebar-footer">
+        <p class="quote mb-0">&ldquo;{{ __('Healthy Pets') }}<br>{{ __('Happier Lives') }}&rdquo;</p>
     </div>
+
+    <svg class="pc-paw-bg" viewBox="0 0 200 200" fill="#fff">
+        <path d="M100 130c-24 0-56 14-56 33 0 9.5 8.7 17 19.4 17 8.9 0 15.5-4.5 23.6-4.5 5.5 0 9.3 4.5 11.6 4.5s6.1-4.5 11.6-4.5c8.1 0 14.7 4.5 23.6 4.5 10.7 0 19.4-7.5 19.4-17 0-19-32-33-53.2-33z"/>
+        <circle cx="47" cy="93" r="19"/>
+        <circle cx="85" cy="58" r="19"/>
+        <circle cx="132" cy="58" r="19"/>
+        <circle cx="170" cy="93" r="19"/>
+    </svg>
 </aside>
 
 <div class="sidebar-overlay d-lg-none" id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1040;" onclick="toggleSidebar()"></div>

@@ -112,6 +112,10 @@ Route::middleware(['auth', 'verified', 'role:vet'])->prefix('vet')->name('vet.')
 
     // Reviews
     Route::get('/reviews', [\App\Http\Controllers\Vet\ReviewController::class, 'index'])->name('reviews.index');
+
+    // Notifications
+     Route::get('/notifications', [\App\Http\Controllers\Vet\NotificationController::class, 'index'])
+    ->name('notifications.index');
 });
 
 // ─── Animal Shelter Routes ──────────────────────────────
