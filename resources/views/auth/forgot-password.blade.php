@@ -1,27 +1,44 @@
 <x-guest-layout>
-    <div class="mb-4 text-muted" style="font-size: 0.875rem;">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
-    </div>
+    <p class="text-center mb-4" style="font-size: 0.875rem; color: var(--fs-text-muted);">
+        {{ __('Enter your email and we\'ll send you a reset link.') }}
+    </p>
 
     <!-- Session Status -->
     <x-auth-session-status class="mb-3" :status="session('status')" />
 
-    <form method="POST" action="{{ route('password.email') }}">
+    <form method="POST" action="{{ route('password.email') }}" novalidate>
         @csrf
 
         <!-- Email Address -->
-        <div class="mb-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="form-control" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-1" />
+        <div class="mb-3">
+            <x-input-label for="email" :value="__('Email Address')" />
+            <input
+                id="email"
+                type="email"
+                name="email"
+                class="form-control @error('email') is-invalid @enderror"
+                value="{{ old('email') }}"
+                required
+                autofocus
+                autocomplete="username"
+                placeholder="Enter your email"
+            />
+            @error('email')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
         </div>
 
-        <x-primary-button class="w-100">
-            {{ __('Email Password Reset Link') }}
-        </x-primary-button>
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-envelope me-1"></i>
+            {{ __('Send Reset Link') }}
+        </button>
 
-        <div class="text-center mt-3">
-            <a href="{{ route('login') }}" class="text-decoration-none" style="font-size: 0.875rem; color: var(--bs-primary);">{{ __('Back to login') }}</a>
+        <!-- Back to Login -->
+        <div class="text-center mt-4 pt-3" style="border-top: 1px solid var(--fs-border-light);">
+            <a href="{{ route('login') }}" class="auth-link" style="font-size: 0.875rem;">
+                <i class="bi bi-arrow-left me-1"></i>{{ __('Back to login') }}
+            </a>
         </div>
     </form>
 </x-guest-layout>

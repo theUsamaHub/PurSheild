@@ -2,37 +2,38 @@
 
 namespace App\Models;
 
-use App\Traits\HasMedia;
-use App\Traits\HasTags;
-use App\Traits\LogsActivity;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 
 class Category extends Model
 {
-    use HasFactory, SoftDeletes, HasMedia, HasTags, LogsActivity;
+    use SoftDeletes;
 
     protected $fillable = [
-        'name',
-        'slug',
-        'description',
-        'body',
-        'image',
-        'is_active',
-        'sort_order',
-        'created_by',
-        'updated_by',
+        'name', 'slug', 'description', 'image', 'parent_id',
+        'is_active', 'sort_order', 'created_by', 'updated_by',
     ];
 
-    protected function casts(): array
+    protected $casts = [
+        'is_active' => 'boolean',
+        'sort_order' => 'integer',
+    ];
+
+    public function parent(): BelongsTo
     {
-        return [
-            'is_active' => 'boolean',
-            'sort_order' => 'integer',
-        ];
+        return $this->belongsTo(Category::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(Category::class, 'parent_id');
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
     }
 
     public function createdBy(): BelongsTo
@@ -43,29 +44,5 @@ class Category extends Model
     public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
-    }
-
-    public function getImageUrlAttribute(): ?string
-    {
-        return $this->image ? asset('storage/' . $this->image) : null;
-    }
-
-    public static function boot(): void
-    {
-        parent::boot();
-
-        static::creating(function (Category $category) {
-            if (empty($category->slug)) {
-                $category->slug = Str::slug($category->name);
-            }
-            $category->created_by = auth()->id() ?? $category->created_by;
-        });
-
-        static::updating(function (Category $category) {
-            if ($category->isDirty('name') && !$category->slug) {
-                $category->slug = Str::slug($category->name);
-            }
-            $category->updated_by = auth()->id() ?? $category->updated_by;
-        });
     }
 }

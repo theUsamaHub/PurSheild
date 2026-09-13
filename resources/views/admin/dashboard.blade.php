@@ -8,8 +8,27 @@
     <!-- Stats Cards -->
     <div class="row g-4 mb-4">
         @foreach ($stats as $stat)
-            <div class="col-md-4 col-lg-2">
-                <a href="{{ route($stat['route']) }}" class="text-decoration-none">
+            <div class="col-md-4 col-lg-3">
+                @if ($stat['route'])
+                    <a href="{{ route($stat['route']) }}" class="text-decoration-none">
+                        <div class="card border-start border-{{ $stat['color'] }} border-4 h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">{{ $stat['label'] }}</div>
+                                        <div class="fs-4 fw-bold">{{ $stat['count'] }}</div>
+                                    </div>
+                                    <div class="bg-{{ $stat['color'] }} bg-opacity-10 rounded-3 d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
+                                        <i class="bi {{ $stat['icon'] }} text-{{ $stat['color'] }}"></i>
+                                    </div>
+                                </div>
+                                @if (!empty($stat['badge']) && $stat['badge'] > 0)
+                                    <span class="badge bg-danger mt-1">{{ $stat['badge'] }} {{ __('new') }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </a>
+                @else
                     <div class="card border-start border-{{ $stat['color'] }} border-4 h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
@@ -21,12 +40,9 @@
                                     <i class="bi {{ $stat['icon'] }} text-{{ $stat['color'] }}"></i>
                                 </div>
                             </div>
-                            @if (!empty($stat['badge']) && $stat['badge'] > 0)
-                                <span class="badge bg-danger mt-1">{{ $stat['badge'] }} {{ __('new') }}</span>
-                            @endif
                         </div>
                     </div>
-                </a>
+                @endif
             </div>
         @endforeach
     </div>
@@ -124,8 +140,10 @@
                         <a href="{{ route('admin.categories.create') }}" class="btn btn-outline-primary btn-sm text-start"><i class="bi bi-plus-circle me-2"></i>{{ __('Create Category') }}</a>
                         <a href="{{ route('admin.users.index') }}" class="btn btn-outline-info btn-sm text-start"><i class="bi bi-people me-2"></i>{{ __('Manage Users') }}</a>
                         <a href="{{ route('admin.tags.index') }}" class="btn btn-outline-warning btn-sm text-start"><i class="bi bi-bookmark me-2"></i>{{ __('Manage Tags') }}</a>
-                        <a href="{{ route('admin.backup.index') }}" class="btn btn-outline-success btn-sm text-start"><i class="bi bi-database me-2"></i>{{ __('Database Backup') }}</a>
-                        <a href="{{ route('admin.logs.index') }}" class="btn btn-outline-secondary btn-sm text-start"><i class="bi bi-journal-text me-2"></i>{{ __('View Logs') }}</a>
+                        <a href="{{ route('admin.care-content.index') }}" class="btn btn-outline-success btn-sm text-start"><i class="bi bi-journal-text me-2"></i>{{ __('Care Content') }}</a>
+                        <a href="{{ route('admin.reviews.index') }}" class="btn btn-outline-danger btn-sm text-start"><i class="bi bi-star me-2"></i>{{ __('Reviews Moderation') }}</a>
+                        <a href="{{ route('admin.backup.index') }}" class="btn btn-outline-secondary btn-sm text-start"><i class="bi bi-database me-2"></i>{{ __('Database Backup') }}</a>
+                        <a href="{{ route('admin.logs.index') }}" class="btn btn-outline-dark btn-sm text-start"><i class="bi bi-journal-text me-2"></i>{{ __('View Logs') }}</a>
                         <a href="{{ route('admin.activity-logs.index') }}" class="btn btn-outline-dark btn-sm text-start"><i class="bi bi-clock-history me-2"></i>{{ __('Activity Log') }}</a>
                     </div>
                 </div>

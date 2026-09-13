@@ -2,10 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,35 +11,22 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        // Seed roles first
+        // 1. Roles (admin, owner, vet, shelter)
         $this->call(RoleSeeder::class);
 
-        // Seed categories
+        // 2. Species, Breeds, Specializations
+        $this->call(SpeciesAndBreedsSeeder::class);
+
+        // 3. Product Categories
         $this->call(CategorySeeder::class);
 
-        // Seed settings
+        // 4. Starter kit settings (keep existing)
         $this->call(SettingsSeeder::class);
 
-        // Create admin user
-        $admin = User::updateOrCreate(
-            ['email' => 'admin@example.com'],
-            [
-                'name' => 'Admin User',
-                'password' => Hash::make('password'),
-                'email_verified_at' => now(),
-            ]
-        );
-        $admin->assignRole('admin');
+        // 5. Users: admin, owners, vets (with profiles), shelters (with profiles)
+        $this->call(FurShieldUsersSeeder::class);
 
-        // Create regular user
-        $user = User::updateOrCreate(
-            ['email' => 'user@example.com'],
-            [
-                'name' => 'Test User',
-                'password' => Hash::make('password'),
-                'email_verified_at' => now(),
-            ]
-        );
-        $user->assignRole('user');
+        // 6. Sample data: pets, health records, appointments, products, adoption listings
+        $this->call(FurShieldDataSeeder::class);
     }
 }

@@ -2,21 +2,48 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-3" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login') }}" novalidate>
         @csrf
 
         <!-- Email Address -->
         <div class="mb-3">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="form-control" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-1" />
+            <x-input-label for="email" :value="__('Email Address')" />
+            <input
+                id="email"
+                type="email"
+                name="email"
+                class="form-control @error('email') is-invalid @enderror"
+                value="{{ old('email') }}"
+                required
+                autofocus
+                autocomplete="username"
+                placeholder="Enter your email"
+            />
+            @error('email')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
         </div>
 
         <!-- Password -->
         <div class="mb-3">
             <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="form-control" type="password" name="password" required autocomplete="current-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-1" />
+            <div class="password-wrapper">
+                <input
+                    id="password"
+                    type="password"
+                    name="password"
+                    class="form-control @error('password') is-invalid @enderror"
+                    required
+                    autocomplete="current-password"
+                    placeholder="Enter your password"
+                />
+                <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
+                    <i class="bi bi-eye"></i>
+                </button>
+            </div>
+            @error('password')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
         </div>
 
         <!-- Remember Me & Forgot Password -->
@@ -29,21 +56,42 @@
             </div>
 
             @if (Route::has('password.request'))
-                <a class="text-decoration-none" style="font-size: 0.875rem; color: var(--bs-primary);" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
+                <a class="auth-link" href="{{ route('password.request') }}">
+                    {{ __('Forgot password?') }}
                 </a>
             @endif
         </div>
 
-        <x-primary-button class="w-100">
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-box-arrow-in-right me-1"></i>
             {{ __('Log in') }}
-        </x-primary-button>
+        </button>
 
+        <!-- Register Link -->
         @if (Route::has('register'))
-            <div class="text-center mt-3">
-                <span class="text-muted" style="font-size: 0.875rem;">{{ __("Don't have an account?") }}</span>
-                <a href="{{ route('register') }}" class="text-decoration-none" style="font-size: 0.875rem; color: var(--bs-primary);">{{ __('Register') }}</a>
+            <div class="text-center mt-4 pt-3" style="border-top: 1px solid var(--fs-border-light);">
+                <span style="font-size: 0.875rem; color: var(--fs-text-muted);">{{ __("Don't have an account?") }}</span>
+                <a href="{{ route('register') }}" class="auth-link">{{ __('Create account') }}</a>
             </div>
         @endif
     </form>
+
+    @push('scripts')
+    <script>
+        function togglePassword(fieldId, btn) {
+            const field = document.getElementById(fieldId);
+            const icon = btn.querySelector('i');
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+    </script>
+    @endpush
 </x-guest-layout>

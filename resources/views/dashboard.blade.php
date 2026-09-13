@@ -1,5 +1,14 @@
 @php
-    $layout = auth()->user()->hasRole('admin') ? 'layouts.app' : 'layouts.user.app';
+    $user = auth()->user();
+    if ($user->hasRole('admin')) {
+        $layout = 'layouts.app';
+    } elseif ($user->hasRole('vet')) {
+        $layout = 'layouts.vet.app';
+    } elseif ($user->hasRole('shelter')) {
+        $layout = 'layouts.shelter.app';
+    } else {
+        $layout = 'layouts.owner.app';
+    }
 @endphp
 @extends($layout)
 

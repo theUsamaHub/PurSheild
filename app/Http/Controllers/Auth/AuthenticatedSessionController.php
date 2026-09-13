@@ -30,11 +30,11 @@ class AuthenticatedSessionController extends Controller
 
         $user = $request->user();
 
-        if ($user->hasRole('admin')) {
-            return redirect()->intended(route('admin.dashboard', absolute: false));
-        }
+        // Update last login timestamp
+        $user->update(['last_login_at' => now()]);
 
-        return redirect()->intended(route('user.dashboard', absolute: false));
+        // Role-based redirect
+        return redirect()->intended($this->getRedirectPath($user));
     }
 
     /**
@@ -49,5 +49,25 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    /**
+     * Get the redirect path based on user role.
+     */
+    private function getRedirectPath($user): string
+    {
+        if ($user->hasRole('admin')) {
+            return route('admin.dashboard', absolute: false);
+        }
+
+        if ($user->hasRole('vet')) {
+            return route('vet.dashboard', absolute: false);
+        }
+
+        if ($user->hasRole('shelter')) {
+            return route('shelter.dashboard', absolute: false);
+        }
+
+        return route('owner.dashboard', absolute: false);
     }
 }

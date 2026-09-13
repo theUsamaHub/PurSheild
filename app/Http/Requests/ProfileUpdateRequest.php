@@ -2,30 +2,45 @@
 
 namespace App\Http\Requests;
 
-use App\Models\User;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class ProfileUpdateRequest extends FormRequest
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
-        return [
+        $user = $this->user();
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class)->ignore($this->user()->id),
-            ],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'profile_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
+
+        if ($user->hasRole('vet')) {
+            $rules = array_merge($rules, [
+                'qualification' => ['nullable', 'string', 'max:255'],
+                'experience_years' => ['nullable', 'integer', 'min:0', 'max:50'],
+                'clinic_name' => ['nullable', 'string', 'max:255'],
+                'clinic_address' => ['nullable', 'string', 'max:500'],
+                'consultation_fee' => ['nullable', 'numeric', 'min:0'],
+                'bio' => ['nullable', 'string', 'max:1000'],
+                'specializations' => ['nullable', 'array'],
+                'specializations.*' => ['exists:specializations,id'],
+            ]);
+        }
+
+        if ($user->hasRole('shelter')) {
+            $rules = array_merge($rules, [
+                'shelter_name' => ['nullable', 'string', 'max:255'],
+                'description' => ['nullable', 'string', 'max:1000'],
+                'shelter_address' => ['nullable', 'string', 'max:500'],
+                'city' => ['nullable', 'string', 'max:255'],
+                'contact_number' => ['nullable', 'string', 'max:30'],
+                'website' => ['nullable', 'url', 'max:255'],
+                'capacity' => ['nullable', 'integer', 'min:1'],
+            ]);
+        }
+
+        return $rules;
     }
 }

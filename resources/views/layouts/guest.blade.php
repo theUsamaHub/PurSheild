@@ -5,25 +5,28 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel Starter Kit') }}</title>
+        <title>{{ config('app.name', 'FurShield') }} - Sign In</title>
 
-        <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
 
-        <!-- Styles -->
         @vite(['resources/css/app.scss', 'resources/js/app.js'])
     </head>
     <body class="auth-wrapper">
         <div class="auth-card">
-            <div class="text-center mb-4">
-                <a href="/" class="text-decoration-none">
-                    <x-application-logo class="w-16 h-16 mx-auto" />
-                </a>
-                <h4 class="mt-2 fw-semibold text-dark">{{ config('app.name', 'Laravel Starter Kit') }}</h4>
+            <div class="auth-logo">
+                <div class="auth-logo-icon">
+                    <i class="bi bi-shield-check"></i>
+                </div>
             </div>
+            <h4 class="auth-title text-center">FurShield</h4>
+            <p class="auth-subtitle text-center">Every Paw/Wing Deserves a Shield of Love</p>
 
-            {{ $slot }}
+            <div class="mt-4">
+                {{ $slot }}
+            </div>
         </div>
+
+        @stack('scripts')
     </body>
 </html>

@@ -25,6 +25,9 @@ Route::prefix('admin')
         Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class)->except(['index', 'show']);
 
         Route::resource('users', \App\Http\Controllers\Admin\UserController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
+        Route::post('/users/{user}/toggle-status', [\App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+        Route::post('/users/{user}/suspend', [\App\Http\Controllers\Admin\UserController::class, 'suspend'])->name('users.suspend');
+        Route::post('/users/{user}/reinstate', [\App\Http\Controllers\Admin\UserController::class, 'reinstate'])->name('users.reinstate');
 
         Route::resource('contacts', \App\Http\Controllers\Admin\ContactController::class)->only(['index', 'show', 'destroy']);
 
@@ -40,6 +43,13 @@ Route::prefix('admin')
         Route::resource('roles', \App\Http\Controllers\Admin\RoleController::class)->except(['show']);
 
         Route::resource('tags', \App\Http\Controllers\Admin\TagController::class)->except(['show']);
+
+        Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
+        Route::resource('product-categories', \App\Http\Controllers\Admin\ProductCategoryController::class)->except(['show']);
+
+        Route::resource('species', \App\Http\Controllers\Admin\SpeciesController::class);
+        Route::resource('breeds', \App\Http\Controllers\Admin\BreedController::class);
+        Route::resource('specializations', \App\Http\Controllers\Admin\SpecializationController::class)->except(['show']);
 
         Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
         Route::get('/activity-logs/export', [\App\Http\Controllers\Admin\ActivityLogController::class, 'export'])->name('activity-logs.export');
@@ -71,8 +81,19 @@ Route::prefix('admin')
         Route::delete('/logs', [\App\Http\Controllers\Admin\LogViewerController::class, 'clear'])->name('logs.clear');
         Route::get('/logs/download', [\App\Http\Controllers\Admin\LogViewerController::class, 'download'])->name('logs.download');
 
+        Route::get('/verification', [\App\Http\Controllers\Admin\VerificationController::class, 'index'])->name('verification.index');
+        Route::post('/verification/vet/{profile}/approve', [\App\Http\Controllers\Admin\VerificationController::class, 'approveVet'])->name('verification.vet.approve');
+        Route::post('/verification/vet/{profile}/reject', [\App\Http\Controllers\Admin\VerificationController::class, 'rejectVet'])->name('verification.vet.reject');
+        Route::post('/verification/shelter/{profile}/approve', [\App\Http\Controllers\Admin\VerificationController::class, 'approveShelter'])->name('verification.shelter.approve');
+        Route::post('/verification/shelter/{profile}/reject', [\App\Http\Controllers\Admin\VerificationController::class, 'rejectShelter'])->name('verification.shelter.reject');
+
         Route::get('/backup', [\App\Http\Controllers\Admin\BackupController::class, 'index'])->name('backup.index');
         Route::post('/backup', [\App\Http\Controllers\Admin\BackupController::class, 'create'])->name('backup.create');
         Route::get('/backup/{filename}', [\App\Http\Controllers\Admin\BackupController::class, 'download'])->name('backup.download');
         Route::delete('/backup/{filename}', [\App\Http\Controllers\Admin\BackupController::class, 'destroy'])->name('backup.destroy');
+
+        Route::resource('care-content', \App\Http\Controllers\Admin\CareContentController::class);
+
+        Route::get('/reviews', [\App\Http\Controllers\Admin\ReviewController::class, 'index'])->name('reviews.index');
+        Route::delete('/reviews/{review}', [\App\Http\Controllers\Admin\ReviewController::class, 'destroy'])->name('reviews.destroy');
     });

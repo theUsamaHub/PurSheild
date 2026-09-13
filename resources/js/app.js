@@ -1,8 +1,9 @@
 import Alpine from 'alpinejs';
 import * as bootstrap from 'bootstrap';
 
-// Make Alpine available globally
+// Make Alpine and Bootstrap available globally
 window.Alpine = Alpine;
+window.bootstrap = bootstrap;
 Alpine.start();
 
 // Bootstrap Toast auto-dismiss

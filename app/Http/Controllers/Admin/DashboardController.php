@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Appointment;
 use App\Models\Category;
 use App\Models\Contact;
 use App\Models\Media;
+use App\Models\Order;
+use App\Models\Pet;
 use App\Models\Role;
 use App\Models\Tag;
 use App\Models\User;
@@ -33,13 +36,19 @@ class DashboardController extends Controller
             ->selectRaw("count(case when status = 'new' then 1 end) as new_count")
             ->first();
 
+        $pendingVerifications = User::whereNull('email_verified_at')->count();
+
         return [
             ['label' => __('Users'), 'count' => User::count(), 'icon' => 'bi-people', 'color' => 'primary', 'route' => 'admin.users.index'],
+            ['label' => __('Pets'), 'count' => Pet::count(), 'icon' => 'bi-heart', 'color' => 'danger', 'route' => null],
+            ['label' => __('Appointments'), 'count' => Appointment::count(), 'icon' => 'bi-calendar-check', 'color' => 'info', 'route' => null],
+            ['label' => __('Orders'), 'count' => Order::count(), 'icon' => 'bi-bag', 'color' => 'warning', 'route' => null],
             ['label' => __('Categories'), 'count' => Category::count(), 'icon' => 'bi-tags', 'color' => 'success', 'route' => 'admin.categories.index'],
             ['label' => __('Contacts'), 'count' => $contactCounts->total, 'icon' => 'bi-envelope', 'color' => 'info', 'route' => 'admin.contacts.index', 'badge' => $contactCounts->new_count],
             ['label' => __('Tags'), 'count' => Tag::count(), 'icon' => 'bi-bookmark', 'color' => 'warning', 'route' => 'admin.tags.index'],
             ['label' => __('Roles'), 'count' => Role::count(), 'icon' => 'bi-shield-check', 'color' => 'secondary', 'route' => 'admin.roles.index'],
             ['label' => __('Media'), 'count' => Media::count(), 'icon' => 'bi-folder', 'color' => 'dark', 'route' => 'admin.media.index'],
+            ['label' => __('Pending Verifications'), 'count' => $pendingVerifications, 'icon' => 'bi-person-check', 'color' => 'danger', 'route' => 'admin.users.index'],
         ];
     }
 

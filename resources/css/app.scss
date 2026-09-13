@@ -1,4 +1,4 @@
-/* ── Laravel Starter Kit - Bootstrap 5 Custom Styles ── */
+/* ── FurShield - Bootstrap 5 Custom Styles ── */
 
 /* Import Bootstrap SCSS */
 @import "bootstrap/scss/bootstrap";
@@ -6,12 +6,55 @@
 /* Import Bootstrap Icons */
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
-/* ── CSS Custom Properties (Design Tokens) ── */
+/* ── FurShield Color Palette (Extracted from design) ── */
 :root {
-    --bs-primary: #4f46e5;
-    --bs-primary-rgb: 79, 70, 229;
-    --bs-link-color: #4f46e5;
-    --bs-link-hover-color: #4338ca;
+    /* Primary Greens */
+    --fs-primary: #1a6b3c;
+    --fs-primary-rgb: 26, 107, 60;
+    --fs-primary-dark: #145730;
+    --fs-primary-light: #2e9e5a;
+    --fs-primary-lighter: #4ade80;
+    --fs-primary-bg: #f0f7f2;
+
+    /* Secondary */
+    --fs-secondary: #1a1a2e;
+    --fs-secondary-light: #6b7280;
+
+    /* Accent */
+    --fs-accent: #f59e0b;
+    --fs-accent-light: #fbbf24;
+
+    /* Status */
+    --fs-success: #16a34a;
+    --fs-warning: #f59e0b;
+    --fs-danger: #dc2626;
+    --fs-info: #0ea5e9;
+
+    /* Backgrounds */
+    --fs-bg: #f8faf9;
+    --fs-bg-card: #ffffff;
+    --fs-bg-sidebar: #1a1a2e;
+
+    /* Text */
+    --fs-text: #374151;
+    --fs-text-muted: #6b7280;
+    --fs-text-heading: #1a1a2e;
+    --fs-text-white: #ffffff;
+
+    /* Borders */
+    --fs-border: #e5e7eb;
+    --fs-border-light: #f3f4f6;
+
+    /* Shadows */
+    --fs-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --fs-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --fs-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+
+    /* Bootstrap overrides */
+    --bs-primary: var(--fs-primary);
+    --bs-primary-rgb: var(--fs-primary-rgb);
+    --bs-link-color: var(--fs-primary);
+    --bs-link-hover-color: var(--fs-primary-dark);
     --bs-body-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
@@ -20,38 +63,43 @@ body {
     font-family: var(--bs-body-font-family);
     font-size: 0.875rem;
     line-height: 1.6;
-    color: #374151;
-    background-color: #f9fafb;
+    color: var(--fs-text);
+    background-color: var(--fs-bg);
 }
 
 h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
-    color: #111827;
+    color: var(--fs-text-heading);
 }
 
 /* ── Card Enhancements ── */
 .card {
     border: none;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--fs-shadow);
     border-radius: 0.5rem;
 }
 
 .card-header {
-    background-color: #fff;
-    border-bottom: 1px solid #e5e7eb;
+    background-color: var(--fs-bg-card);
+    border-bottom: 1px solid var(--fs-border);
 }
 
 /* ── Form Enhancements ── */
 .form-control:focus,
 .form-select:focus {
-    border-color: var(--bs-primary);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    border-color: var(--fs-primary);
+    box-shadow: 0 0 0 3px rgba(26, 107, 60, 0.15);
 }
 
 .form-label {
     font-weight: 500;
-    color: #374151;
+    color: var(--fs-text);
     margin-bottom: 0.375rem;
+}
+
+.form-text {
+    font-size: 0.8rem;
+    color: var(--fs-text-muted);
 }
 
 /* ── Button Enhancements ── */
@@ -63,13 +111,43 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary {
-    background-color: var(--bs-primary);
-    border-color: var(--bs-primary);
+    background-color: var(--fs-primary);
+    border-color: var(--fs-primary);
+    color: #fff;
 }
 
-.btn-primary:hover {
-    background-color: #4338ca;
-    border-color: #4338ca;
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--fs-primary-dark);
+    border-color: var(--fs-primary-dark);
+    color: #fff;
+}
+
+.btn-outline-primary {
+    color: var(--fs-primary);
+    border-color: var(--fs-primary);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+    background-color: var(--fs-primary);
+    border-color: var(--fs-primary);
+    color: #fff;
+}
+
+.btn-success {
+    background-color: var(--fs-success);
+    border-color: var(--fs-success);
+}
+
+.btn-warning {
+    background-color: var(--fs-warning);
+    border-color: var(--fs-warning);
+}
+
+.btn-danger {
+    background-color: var(--fs-danger);
+    border-color: var(--fs-danger);
 }
 
 /* ── Table Enhancements ── */
@@ -78,12 +156,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .table > thead {
-    background-color: #f9fafb;
+    background-color: var(--fs-bg);
 }
 
 .table > thead th {
     font-weight: 600;
-    color: #374151;
+    color: var(--fs-text);
     border-bottom-width: 1px;
 }
 
@@ -102,11 +180,10 @@ h1, h2, h3, h4, h5, h6 {
 .sidebar {
     width: 250px;
     min-height: 100vh;
-    background-color: #111827;
+    background-color: var(--fs-bg-sidebar);
     transition: width 0.3s ease;
 }
 
-/* Mobile: force sidebar visible when toggled */
 .sidebar.show-mobile {
     display: flex !important;
     position: fixed;
@@ -131,7 +208,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .sidebar .nav-link.active {
     color: #fff;
-    background-color: var(--bs-primary);
+    background-color: var(--fs-primary);
 }
 
 .sidebar .nav-link .bi {
@@ -179,23 +256,141 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f3f4f6;
+    background: linear-gradient(135deg, var(--fs-primary-bg) 0%, #e8f5e9 50%, #f0f7f2 100%);
+    padding: 2rem 1rem;
 }
 
 .auth-card {
     width: 100%;
-    max-width: 400px;
+    max-width: 440px;
     padding: 2rem;
-    background: #fff;
+    background: var(--fs-bg-card);
     border-radius: 0.75rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--fs-shadow-md);
+    border: 1px solid var(--fs-border-light);
+}
+
+.auth-card .auth-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.auth-card .auth-logo-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--fs-primary), var(--fs-primary-light));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.5rem;
+}
+
+.auth-card .auth-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--fs-text-heading);
+    margin-top: 0.75rem;
+}
+
+.auth-card .auth-subtitle {
+    font-size: 0.875rem;
+    color: var(--fs-text-muted);
+    margin-top: 0.25rem;
+}
+
+.auth-card .form-control,
+.auth-card .form-select {
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.5rem;
+    border-color: var(--fs-border);
+    font-size: 0.875rem;
+}
+
+.auth-card .form-control:focus,
+.auth-card .form-select:focus {
+    border-color: var(--fs-primary);
+    box-shadow: 0 0 0 3px rgba(26, 107, 60, 0.1);
+}
+
+.auth-card .btn-primary {
+    padding: 0.625rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.auth-card .btn-secondary {
+    padding: 0.625rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.auth-card .form-check-input:checked {
+    background-color: var(--fs-primary);
+    border-color: var(--fs-primary);
+}
+
+.auth-card .auth-link {
+    color: var(--fs-primary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.auth-card .auth-link:hover {
+    color: var(--fs-primary-dark);
+    text-decoration: underline;
+}
+
+/* Role selection cards */
+.role-option {
+    border: 2px solid var(--fs-border);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.role-option:hover {
+    border-color: var(--fs-primary-lighter);
+    background-color: var(--fs-primary-bg);
+}
+
+.role-option.selected {
+    border-color: var(--fs-primary);
+    background-color: var(--fs-primary-bg);
+    box-shadow: 0 0 0 3px rgba(26, 107, 60, 0.1);
+}
+
+.role-option input[type="radio"] {
+    display: none;
+}
+
+.role-option .role-icon {
+    font-size: 1.5rem;
+    color: var(--fs-primary);
+    margin-bottom: 0.25rem;
+}
+
+.role-option .role-name {
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--fs-text-heading);
 }
 
 /* ── Empty State ── */
 .empty-state {
     text-align: center;
     padding: 3rem 1rem;
-    color: #6b7280;
+    color: var(--fs-text-muted);
 }
 
 .empty-state .bi {
@@ -216,4 +411,47 @@ h1, h2, h3, h4, h5, h6 {
     align-items: center;
     justify-content: center;
     z-index: 9999;
+}
+
+/* ── Validation States ── */
+.is-invalid {
+    border-color: var(--fs-danger) !important;
+}
+
+.invalid-feedback {
+    color: var(--fs-danger);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+/* ── Password Toggle ── */
+.password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--fs-text-muted);
+    cursor: pointer;
+    padding: 0;
+    z-index: 5;
+}
+
+.password-toggle:hover {
+    color: var(--fs-primary);
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper .form-control {
+    padding-right: 2.5rem;
+}
+
+/* ── Modal Scroll Fix ── */
+.modal-dialog-scrollable .modal-body {
+    overflow-y: auto;
+    max-height: calc(100vh - 10rem);
 }
