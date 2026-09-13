@@ -17,7 +17,7 @@
                 <div class="card-body p-4 text-center">
                     <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:96px;height:96px;background:linear-gradient(135deg,#1a6b3c,#2e9e5a);">
                         @if ($vet->profile_image)
-                            <img src="{{ Storage::url($vet->profile_image) }}" alt="{{ $vet->name }}" class="rounded-circle" style="width:96px;height:96px;object-fit:cover;">
+                            <img src="{{ asset('storage/' . $vet->profile_image) }}" alt="{{ $vet->name }}" class="rounded-circle" style="width:96px;height:96px;object-fit:cover;">
                         @else
                             <span class="text-white fw-bold" style="font-size:2.5rem;">{{ substr($vet->name, 0, 1) }}</span>
                         @endif

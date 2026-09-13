@@ -21,10 +21,10 @@
                                     $primaryImage = $pet->images->firstWhere('is_primary') ?? $pet->images->first();
                                 @endphp
                                 @if ($primaryImage)
-                                    <img src="{{ Storage::url($primaryImage->image_path) }}" alt="{{ $pet->name }}"
+                                    <img src="{{ asset('storage/' . $primaryImage->image_path) }}" alt="{{ $pet->name }}"
                                         class="rounded-circle me-3" style="width:48px;height:48px;object-fit:cover;">
                                 @elseif ($pet->profile_image)
-                                    <img src="{{ Storage::url($pet->profile_image) }}" alt="{{ $pet->name }}"
+                                    <img src="{{ asset('storage/' . $pet->profile_image) }}" alt="{{ $pet->name }}"
                                         class="rounded-circle me-3" style="width:48px;height:48px;object-fit:cover;">
                                 @else
                                     <div class="rounded-circle d-inline-flex align-items-center justify-content-center me-3"

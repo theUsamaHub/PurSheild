@@ -25,26 +25,17 @@
                 <small class="text-uppercase text-secondary px-3 fw-semibold" style="font-size:0.7rem;letter-spacing:0.05em;">{{ __('Adoption') }}</small>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('shelter.listings.*') ? 'active' : '' }}" href="#">
+                <a class="nav-link {{ request()->routeIs('shelter.listings.*') ? 'active' : '' }}" href="{{ route('shelter.listings.index') }}">
                     <i class="bi bi-bookmark-heart"></i> {{ __('My Listings') }}
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('shelter.applications.*') ? 'active' : '' }}" href="#">
+                <a class="nav-link {{ request()->routeIs('shelter.applications.*') ? 'active' : '' }}" href="{{ route('shelter.applications.index') }}">
                     <i class="bi bi-envelope"></i> {{ __('Applications') }}
                 </a>
             </li>
-
-            <li class="nav-item mt-2">
-                <small class="text-uppercase text-secondary px-3 fw-semibold" style="font-size:0.7rem;letter-spacing:0.05em;">{{ __('Animals') }}</small>
-            </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('shelter.animals.*') ? 'active' : '' }}" href="#">
-                    <i class="bi bi-heart"></i> {{ __('Animals') }}
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('shelter.care-status.*') ? 'active' : '' }}" href="#">
+                <a class="nav-link {{ request()->routeIs('shelter.care-status.*') ? 'active' : '' }}" href="{{ route('shelter.care-status.index') }}">
                     <i class="bi bi-clipboard2-pulse"></i> {{ __('Care Status') }}
                 </a>
             </li>
@@ -53,7 +44,7 @@
                 <small class="text-uppercase text-secondary px-3 fw-semibold" style="font-size:0.7rem;letter-spacing:0.05em;">{{ __('Account') }}</small>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('shelter.reviews.*') ? 'active' : '' }}" href="#">
+                <a class="nav-link {{ request()->routeIs('shelter.reviews.*') ? 'active' : '' }}" href="{{ route('shelter.reviews.index') }}">
                     <i class="bi bi-star"></i> {{ __('My Reviews') }}
                 </a>
             </li>

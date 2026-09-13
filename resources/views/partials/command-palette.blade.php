@@ -109,12 +109,32 @@ function commandPalette() {
             { name: 'My Pets', url: '{{ route("owner.pets.index") }}', icon: 'bi bi-heart', category: 'Owner' },
             { name: 'Add Pet', url: '{{ route("owner.pets.create") }}', icon: 'bi bi-plus-circle', category: 'Owner' },
             { name: 'Appointments', url: '{{ route("owner.appointments.index") }}', icon: 'bi bi-calendar-check', category: 'Owner' },
+            { name: 'Book Appointment', url: '{{ route("owner.appointments.create") }}', icon: 'bi bi-calendar-plus', category: 'Owner' },
             { name: 'Browse Vets', url: '{{ route("owner.browse-vets") }}', icon: 'bi bi-heartbeat', category: 'Owner' },
             { name: 'Adoption', url: '{{ route("owner.browse-adoption") }}', icon: 'bi bi-bookmark-heart', category: 'Owner' },
             { name: 'Products', url: '{{ route("owner.products.index") }}', icon: 'bi bi-shop', category: 'Owner' },
             { name: 'My Cart', url: '{{ route("owner.cart.index") }}', icon: 'bi bi-cart3', category: 'Owner' },
             { name: 'My Orders', url: '{{ route("owner.orders.index") }}', icon: 'bi bi-receipt', category: 'Owner' },
             { name: 'Care Content', url: '{{ route("owner.care.index") }}', icon: 'bi bi-journal-bookmark', category: 'Owner' },
+            { name: 'Profile', url: '{{ route("profile.edit") }}', icon: 'bi bi-person', category: 'Account' },
+            @endif
+            @if(auth()->user()->hasRole('vet'))
+            { name: 'Vet Dashboard', url: '{{ route("vet.dashboard") }}', icon: 'bi bi-speedometer2', category: 'Veterinarian' },
+            { name: 'My Appointments', url: '{{ route("vet.appointments.index") }}', icon: 'bi bi-calendar-check', category: 'Veterinarian' },
+            { name: 'Availability', url: '{{ route("vet.availability.index") }}', icon: 'bi bi-clock', category: 'Veterinarian' },
+            { name: 'My Patients', url: '{{ route("vet.patients.index") }}', icon: 'bi bi-heart-pulse', category: 'Veterinarian' },
+            { name: 'Treatments', url: '{{ route("vet.treatments.index") }}', icon: 'bi bi-clipboard2-pulse', category: 'Veterinarian' },
+            { name: 'My Reviews', url: '{{ route("vet.reviews.index") }}', icon: 'bi bi-star', category: 'Veterinarian' },
+            { name: 'Profile', url: '{{ route("profile.edit") }}', icon: 'bi bi-person', category: 'Account' },
+            @endif
+            @if(auth()->user()->hasRole('shelter'))
+            { name: 'Shelter Dashboard', url: '{{ route("shelter.dashboard") }}', icon: 'bi bi-speedometer2', category: 'Shelter' },
+            { name: 'My Listings', url: '{{ route("shelter.listings.index") }}', icon: 'bi bi-bookmark-heart', category: 'Shelter' },
+            { name: 'New Listing', url: '{{ route("shelter.listings.create") }}', icon: 'bi bi-plus-circle', category: 'Shelter' },
+            { name: 'Applications', url: '{{ route("shelter.applications.index") }}', icon: 'bi bi-envelope', category: 'Shelter' },
+            { name: 'Care Status', url: '{{ route("shelter.care-status.index") }}', icon: 'bi bi-clipboard2-pulse', category: 'Shelter' },
+            { name: 'My Reviews', url: '{{ route("shelter.reviews.index") }}', icon: 'bi bi-star', category: 'Shelter' },
+            { name: 'Profile', url: '{{ route("profile.edit") }}', icon: 'bi bi-person', category: 'Account' },
             @endif
         ],
         get filtered() {

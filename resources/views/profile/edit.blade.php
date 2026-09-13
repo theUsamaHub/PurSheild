@@ -45,7 +45,7 @@
             <div class="card mb-4">
                 <div class="card-body p-4 text-center">
                     @if ($user->profile_image)
-                        <img src="{{ Storage::url($user->profile_image) }}" alt="{{ $user->name }}"
+                        <img src="{{ asset('storage/' . $user->profile_image) }}" alt="{{ $user->name }}"
                             class="rounded-circle mb-3" style="width:80px;height:80px;object-fit:cover;">
                     @else
                         <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3"

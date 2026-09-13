@@ -15,7 +15,10 @@ class AdoptionController extends Controller
     public function index(Request $request): View
     {
         $query = AdoptionListing::with(['species', 'breed', 'shelter.shelterProfile', 'images'])
-            ->where('status', 'available');
+            ->where('status', 'available')
+            ->whereHas('shelter', function ($q) {
+                $q->where('status', 'active');
+            });
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {

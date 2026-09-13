@@ -14,7 +14,7 @@
                 <div class="position-relative" style="height:420px;background:#f0f7f2;" x-data="{ activeImage: 0 }">
                     @if ($listing->images->count())
                         @foreach ($listing->images as $idx => $image)
-                            <img src="{{ asset('uploads/adoptions/' . $image->image_path) }}"
+                            <img src="{{ asset('storage/' . $image->image_path) }}"
                                  alt="{{ $listing->pet_name }} - {{ $idx + 1 }}"
                                  class="w-100 h-100 position-absolute top-0 start-0"
                                  style="object-fit:cover;transition:opacity 0.3s;"
@@ -50,7 +50,7 @@
                     <div class="card-body py-2 px-3 bg-light" x-data="{ activeImage: 0 }">
                         <div class="d-flex gap-2 overflow-auto">
                             @foreach ($listing->images as $idx => $image)
-                                <img src="{{ asset('uploads/adoptions/' . $image->image_path) }}"
+                                <img src="{{ asset('storage/' . $image->image_path) }}"
                                      alt="{{ $listing->pet_name }} thumb {{ $idx + 1 }}"
                                      class="rounded flex-shrink-0"
                                      style="width:50px;height:50px;object-fit:cover;cursor:pointer;border:2px solid {{ $idx === 0 ? '#1a6b3c' : 'transparent' }};"
@@ -116,7 +116,7 @@
                             <div class="text-center p-2 rounded bg-light">
                                 <i class="bi bi-clock text-primary fs-5 d-block mb-1"></i>
                                 <small class="text-muted d-block">{{ __('Age') }}</small>
-                                <strong>{{ $listing->age ?? '?' }} {{ __('months') }}</strong>
+                                <strong>{{ $listing->age ?? '?' }}</strong>
                             </div>
                         </div>
                         <div class="col-6">
@@ -159,17 +159,30 @@
                             <i class="bi bi-building text-white fs-6"></i>
                         </div>
                         <div>
-                            <strong>{{ $listing->shelter?->name ?? 'Unknown Shelter' }}</strong>
+                            <strong>{{ $listing->shelter?->shelterProfile->shelter_name ?? $listing->shelter?->name ?? 'Unknown Shelter' }}</strong>
                             @if ($listing->shelter?->shelterProfile)
                                 <div class="text-muted" style="font-size:0.8rem;">
-                                    @if ($listing->shelter->shelterProfile->shelter_name)
-                                        {{ $listing->shelter->shelterProfile->shelter_name }}<br>
+                                    @if ($listing->shelter->shelterProfile->description)
+                                        <p class="mb-1" style="font-size:0.8rem;">{{ Str::limit($listing->shelter->shelterProfile->description, 100) }}</p>
+                                    @endif
+                                    @if ($listing->shelter->shelterProfile->address)
+                                        <div><i class="bi bi-geo-alt me-1"></i>{{ $listing->shelter->shelterProfile->address }}</div>
                                     @endif
                                     @if ($listing->shelter->shelterProfile->city)
-                                        <i class="bi bi-geo-alt me-1"></i>{{ $listing->shelter->shelterProfile->city }}
+                                        <div><i class="bi bi-map me-1"></i>{{ $listing->shelter->shelterProfile->city }}</div>
                                     @endif
                                     @if ($listing->shelter->shelterProfile->contact_number)
-                                        <br><i class="bi bi-telephone me-1"></i>{{ $listing->shelter->shelterProfile->contact_number }}
+                                        <div><i class="bi bi-telephone me-1"></i>{{ $listing->shelter->shelterProfile->contact_number }}</div>
+                                    @endif
+                                    @if ($listing->shelter->shelterProfile->capacity)
+                                        <div><i class="bi bi-grid me-1"></i>{{ __('Capacity:') }} {{ $listing->shelter->shelterProfile->capacity }} {{ __('animals') }}</div>
+                                    @endif
+                                    @if ($listing->shelter->shelterProfile->website)
+                                        <div class="mt-1">
+                                            <a href="{{ $listing->shelter->shelterProfile->website }}" target="_blank" class="text-decoration-none" style="font-size:0.8rem;">
+                                                <i class="bi bi-link-45deg me-1"></i>{{ __('View on Map') }}
+                                            </a>
+                                        </div>
                                     @endif
                                 </div>
                             @endif
@@ -246,7 +259,7 @@
                         <div class="modal-header">
                             <div>
                                 <h5 class="modal-title fw-semibold">{{ __('Apply to Adopt') }} {{ $listing->pet_name }}</h5>
-                                <small class="text-muted">{{ __('at') }} {{ $listing->shelter?->name ?? 'Unknown Shelter' }}</small>
+                                <small class="text-muted">{{ __('at') }} {{ $listing->shelter?->shelterProfile->shelter_name ?? $listing->shelter?->name ?? 'Unknown Shelter' }}</small>
                             </div>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -254,7 +267,7 @@
                             <div class="alert alert-light border mb-3">
                                 <div class="d-flex align-items-center gap-3">
                                     @if ($listing->images->count())
-                                        <img src="{{ asset('uploads/adoptions/' . $listing->images->first()->image_path) }}"
+                                        <img src="{{ asset('storage/' . $listing->images->first()->image_path) }}"
                                              alt="{{ $listing->pet_name }}"
                                              class="rounded" style="width:60px;height:60px;object-fit:cover;">
                                     @endif
@@ -263,7 +276,7 @@
                                         <div class="text-muted" style="font-size:0.8rem;">
                                             {{ $listing->species?->name ?? '' }}
                                             {{ $listing->breed ? ' - ' . $listing->breed->name : '' }}
-                                            {{ $listing->age ? ' | ' . $listing->age . ' months' : '' }}
+                                            {{ $listing->age ? ' | ' . $listing->age : '' }}
                                             {{ ' | ' . ucfirst($listing->gender ?? 'Unknown') }}
                                         </div>
                                     </div>

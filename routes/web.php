@@ -88,11 +88,58 @@ Route::middleware(['auth', 'verified', 'role:owner'])->prefix('owner')->name('ow
 // ─── Veterinarian Routes ────────────────────────────────
 Route::middleware(['auth', 'verified', 'role:vet'])->prefix('vet')->name('vet.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Vet\DashboardController::class, 'index'])->name('dashboard');
+
+    // Appointments
+    Route::get('/appointments', [\App\Http\Controllers\Vet\AppointmentController::class, 'index'])->name('appointments.index');
+    Route::get('/appointments/{appointment}', [\App\Http\Controllers\Vet\AppointmentController::class, 'show'])->name('appointments.show');
+    Route::put('/appointments/{appointment}/approve', [\App\Http\Controllers\Vet\AppointmentController::class, 'approve'])->name('appointments.approve');
+    Route::put('/appointments/{appointment}/reject', [\App\Http\Controllers\Vet\AppointmentController::class, 'reject'])->name('appointments.reject');
+    Route::put('/appointments/{appointment}/status', [\App\Http\Controllers\Vet\AppointmentController::class, 'updateStatus'])->name('appointments.updateStatus');
+
+    // Availability
+    Route::get('/availability', [\App\Http\Controllers\Vet\AvailabilityController::class, 'index'])->name('availability.index');
+    Route::put('/availability', [\App\Http\Controllers\Vet\AvailabilityController::class, 'update'])->name('availability.update');
+
+    // Patients
+    Route::get('/patients', [\App\Http\Controllers\Vet\PatientController::class, 'index'])->name('patients.index');
+    Route::get('/patients/{pet}', [\App\Http\Controllers\Vet\PatientController::class, 'show'])->name('patients.show');
+
+    // Treatments
+    Route::get('/treatments', [\App\Http\Controllers\Vet\TreatmentController::class, 'index'])->name('treatments.index');
+    Route::get('/treatments/{appointment}/create', [\App\Http\Controllers\Vet\TreatmentController::class, 'create'])->name('treatments.create');
+    Route::post('/treatments/{appointment}', [\App\Http\Controllers\Vet\TreatmentController::class, 'store'])->name('treatments.store');
+    Route::get('/treatments/{treatment}', [\App\Http\Controllers\Vet\TreatmentController::class, 'show'])->name('treatments.show');
+
+    // Reviews
+    Route::get('/reviews', [\App\Http\Controllers\Vet\ReviewController::class, 'index'])->name('reviews.index');
 });
 
 // ─── Animal Shelter Routes ──────────────────────────────
 Route::middleware(['auth', 'verified', 'role:shelter'])->prefix('shelter')->name('shelter.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Shelter\DashboardController::class, 'index'])->name('dashboard');
+
+    // Adoption Listings
+    Route::get('/listings', [\App\Http\Controllers\Shelter\ListingController::class, 'index'])->name('listings.index');
+    Route::get('/listings/create', [\App\Http\Controllers\Shelter\ListingController::class, 'create'])->name('listings.create');
+    Route::post('/listings', [\App\Http\Controllers\Shelter\ListingController::class, 'store'])->name('listings.store');
+    Route::get('/listings/{listing}', [\App\Http\Controllers\Shelter\ListingController::class, 'show'])->name('listings.show');
+    Route::get('/listings/{listing}/edit', [\App\Http\Controllers\Shelter\ListingController::class, 'edit'])->name('listings.edit');
+    Route::put('/listings/{listing}', [\App\Http\Controllers\Shelter\ListingController::class, 'update'])->name('listings.update');
+    Route::delete('/listings/{listing}', [\App\Http\Controllers\Shelter\ListingController::class, 'destroy'])->name('listings.destroy');
+
+    // Applications
+    Route::get('/applications', [\App\Http\Controllers\Shelter\ApplicationController::class, 'index'])->name('applications.index');
+    Route::get('/applications/{application}', [\App\Http\Controllers\Shelter\ApplicationController::class, 'show'])->name('applications.show');
+    Route::put('/applications/{application}/status', [\App\Http\Controllers\Shelter\ApplicationController::class, 'updateStatus'])->name('applications.updateStatus');
+    Route::post('/applications/{application}/finalize', [\App\Http\Controllers\Shelter\ApplicationController::class, 'finalizeAdoption'])->name('applications.finalize');
+
+    // Reviews
+    Route::get('/reviews', [\App\Http\Controllers\Shelter\ReviewController::class, 'index'])->name('reviews.index');
+
+    // Care Status
+    Route::get('/care-status', [\App\Http\Controllers\Shelter\CareController::class, 'index'])->name('care-status.index');
+    Route::post('/care-status', [\App\Http\Controllers\Shelter\CareController::class, 'store'])->name('care-status.store');
+    Route::delete('/care-status/{log}', [\App\Http\Controllers\Shelter\CareController::class, 'destroy'])->name('care-status.destroy');
 });
 
 // ─── Profile (shared across all roles) ──────────────────

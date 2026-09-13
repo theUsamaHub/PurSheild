@@ -25,7 +25,7 @@
             <div class="mb-3">
                 <img id="photo-preview"
                     @if ($user->profile_image)
-                        src="{{ Storage::url($user->profile_image) }}"
+                        src="{{ asset('storage/' . $user->profile_image) }}"
                     @else
                         src="data:image/svg+xml;base64,{{ base64_encode('<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'96\' height=\'96\'><rect width=\'96\' height=\'96\' rx=\'48\' fill=\'%231a6b3c\'/><text x=\'48\' y=\'58\' text-anchor=\'middle\' fill=\'white\' font-size=\'36\' font-weight=\'bold\'>' . substr($user->name, 0, 1) . '</text></svg>') }}"
                     @endif
@@ -274,6 +274,18 @@
                         class="form-control @error('description') is-invalid @enderror"
                         placeholder="{{ __('Describe your shelter mission and what you do...') }}">{{ old('description', $shelterProfile->description ?? '') }}</textarea>
                     @error('description')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-md-6">
+                    <label for="latitude" class="form-label fw-semibold">{{ __('Google Maps Link') }}</label>
+                    <input type="url" id="latitude" name="latitude"
+                        class="form-control @error('latitude') is-invalid @enderror"
+                        value="{{ old('latitude', $shelterProfile->latitude ?? '') }}"
+                        placeholder="{{ __('https://maps.google.com/...') }}">
+                    <div class="form-text">{{ __('Paste your Google Maps share link for map-based search.') }}</div>
+                    @error('latitude')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>

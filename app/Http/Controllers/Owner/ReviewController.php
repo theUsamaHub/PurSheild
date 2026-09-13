@@ -17,15 +17,6 @@ class ReviewController extends Controller
             return back()->with('error', 'You can only review veterinarians.');
         }
 
-        $existingReview = Review::where('user_id', Auth::id())
-            ->where('reviewable_type', User::class)
-            ->where('reviewable_id', $vet->id)
-            ->first();
-
-        if ($existingReview) {
-            return back()->with('error', 'You have already reviewed this veterinarian.');
-        }
-
         $validated = $request->validate([
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'comment' => ['nullable', 'string', 'max:2000'],
@@ -36,6 +27,21 @@ class ReviewController extends Controller
             'rating.max' => 'Rating must not exceed 5.',
             'comment.max' => 'Comment must not exceed 2000 characters.',
         ]);
+
+        $existingReview = Review::where('user_id', Auth::id())
+            ->where('reviewable_type', User::class)
+            ->where('reviewable_id', $vet->id)
+            ->first();
+
+        if ($existingReview) {
+            $existingReview->update([
+                'rating' => $validated['rating'],
+                'comment' => $validated['comment'] ?? null,
+            ]);
+
+            return redirect()->back()
+                ->with('success', 'Review updated successfully.');
+        }
 
         Review::create([
             'user_id' => Auth::id(),

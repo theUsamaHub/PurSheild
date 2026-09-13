@@ -107,7 +107,7 @@
                                 <td>
                                     @php $primaryImage = $product->images->where('is_primary', true)->first() ?? $product->images->first(); @endphp
                                     @if ($primaryImage)
-                                        <img src="{{ Storage::url($primaryImage->image_path) }}" alt="{{ $product->name }}" class="rounded" style="width:40px;height:40px;object-fit:cover;">
+                                        <img src="{{ asset('storage/' . $primaryImage->image_path) }}" alt="{{ $product->name }}" class="rounded" style="width:40px;height:40px;object-fit:cover;">
                                     @else
                                         <div class="rounded d-flex align-items-center justify-content-center bg-secondary bg-opacity-25" style="width:40px;height:40px;">
                                             <i class="bi bi-image text-secondary"></i>

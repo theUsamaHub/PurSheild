@@ -149,21 +149,10 @@
                                                 </button>
                                             </form>
                                         @endif
-                                        @if ($appointment->vet_id && !in_array($appointment->vet_id, $reviewedVetIds))
-                                            @if ($appointment->status === 'completed')
-                                                <button type="button" class="btn btn-outline-success btn-sm" title="{{ __('Review Vet') }}" data-bs-toggle="modal" data-bs-target="#reviewModal{{ $appointment->vet_id }}">
-                                                    <i class="bi bi-star me-1"></i>{{ __('Review') }}
-                                                </button>
-                                            @else
-                                                <button type="button" class="btn btn-outline-secondary btn-sm" title="{{ __('Review available after appointment is completed') }}" disabled style="opacity:0.45;cursor:not-allowed;">
-                                                    <i class="bi bi-star me-1"></i>{{ __('Review') }}
-                                                </button>
-                                            @endif
-                                        @endif
-                                        @if ($appointment->vet_id && in_array($appointment->vet_id, $reviewedVetIds))
-                                            <span class="btn btn-outline-success btn-sm" title="{{ __('Already Reviewed') }}" style="opacity:0.6;cursor:default;">
-                                                <i class="bi bi-star-fill me-1"></i>{{ __('Reviewed') }}
-                                            </span>
+                                        @if ($appointment->status === 'completed' && $appointment->vet_id)
+                                            <button type="button" class="btn btn-outline-success btn-sm" title="{{ in_array($appointment->vet_id, $reviewedVetIds) ? __('Edit Review') : __('Review Vet') }}" data-bs-toggle="modal" data-bs-target="#reviewModal{{ $appointment->vet_id }}">
+                                                <i class="bi bi-{{ in_array($appointment->vet_id, $reviewedVetIds) ? 'pencil-square' : 'star' }} me-1"></i>{{ in_array($appointment->vet_id, $reviewedVetIds) ? __('Edit Review') : __('Review') }}
+                                            </button>
                                         @endif
                                     </div>
                                 </td>
@@ -195,42 +184,50 @@
 
     <!-- Review Modals for completed appointments -->
     @foreach($appointments->where('status', 'completed')->whereNotNull('vet_id')->unique('vet_id') as $appointment)
-        @if(!in_array($appointment->vet_id, $reviewedVetIds))
-            <div class="modal fade" id="reviewModal{{ $appointment->vet_id }}" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <form action="{{ route('owner.reviews.store', $appointment->vet_id) }}" method="POST">
-                            @csrf
-                            <div class="modal-header">
-                                <h5 class="modal-title fw-semibold">{{ __('Review') }} {{ $appointment->vet->name ?? '' }}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">{{ __('Rating') }} *</label>
-                                    <div class="d-flex gap-1" x-data="{ rating: 0 }">
-                                        @for ($i = 1; $i <= 5; $i++)
-                                            <button type="button" class="btn btn-link p-0 text-warning" style="font-size:1.5rem;text-decoration:none;" x-on:click="rating = {{ $i }}">
-                                                <i class="bi" :class="rating >= {{ $i }} ? 'bi-star-fill' : 'bi-star'"></i>
-                                            </button>
-                                        @endfor                                        <input type="hidden" name="rating" :value="rating" required>
-                                    </div>
+        @php
+            $existingReview = $existingReviews->get($appointment->vet_id);
+            $isEditing = $existingReview !== null;
+        @endphp
+        <div class="modal fade" id="reviewModal{{ $appointment->vet_id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ route('owner.reviews.store', $appointment->vet_id) }}" method="POST">
+                        @csrf
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-semibold">{{ $isEditing ? __('Edit Review') : __('Review') }} {{ $appointment->vet->name ?? '' }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">{{ __('Rating') }} *</label>
+                                <div class="d-flex gap-1" x-data="{ rating: {{ $existingReview->rating ?? 0 }} }">
+                                    @for ($i = 1; $i <= 5; $i++)
+                                        <button type="button" class="btn btn-link p-0 text-warning" style="font-size:1.5rem;text-decoration:none;" x-on:click="rating = {{ $i }}">
+                                            <i class="bi" :class="rating >= {{ $i }} ? 'bi-star-fill' : 'bi-star'"></i>
+                                        </button>
+                                    @endfor
+                                    <input type="hidden" name="rating" :value="rating" required>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">{{ __('Comment') }}</label>
-                                    <textarea class="form-control" name="comment" rows="4" placeholder="{{ __('Share your experience...') }}">{{ old('comment') }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">{{ __('Comment') }}</label>
+                                <textarea class="form-control" name="comment" rows="4" placeholder="{{ __('Share your experience...') }}">{{ $existingReview->comment ?? old('comment') }}</textarea>
+                            </div>
+                            @if($isEditing)
+                                <div class="alert alert-info mb-0" style="font-size:0.8rem;">
+                                    <i class="bi bi-info-circle me-1"></i>{{ __('Updating your review will replace the previous one.') }}
                                 </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
-                                <button type="submit" class="btn btn-primary btn-sm">
-                                    <i class="bi bi-send me-1"></i>{{ __('Submit Review') }}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                            @endif
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="bi bi-send me-1"></i>{{ $isEditing ? __('Update Review') : __('Submit Review') }}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-        @endif
+        </div>
     @endforeach
 @endsection

@@ -26,11 +26,12 @@ class AppointmentController extends Controller
         $appointments = $query->latest('appointment_date')->latest('appointment_time')->paginate(15);
 
         $vetIds = $appointments->pluck('vet_id')->filter()->unique()->toArray();
-        $reviewedVetIds = Review::where('user_id', Auth::id())
+        $existingReviews = Review::where('user_id', Auth::id())
             ->where('reviewable_type', User::class)
             ->whereIn('reviewable_id', $vetIds)
-            ->pluck('reviewable_id')
-            ->toArray();
+            ->get()
+            ->keyBy('reviewable_id');
+        $reviewedVetIds = $existingReviews->keys()->toArray();
 
         $userId = Auth::id();
         $stats = [
@@ -40,7 +41,7 @@ class AppointmentController extends Controller
             'completed' => Appointment::where('owner_id', $userId)->where('status', 'completed')->count(),
         ];
 
-        return view('owner.appointments.index', compact('appointments', 'stats', 'reviewedVetIds'));
+        return view('owner.appointments.index', compact('appointments', 'stats', 'reviewedVetIds', 'existingReviews'));
     }
 
     public function create(Request $request): View

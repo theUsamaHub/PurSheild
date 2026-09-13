@@ -56,7 +56,7 @@
                 <div class="card h-100 border-0 shadow-sm overflow-hidden">
                     <div class="position-relative" style="height:220px;background:#f0f7f2;">
                         @if ($listing->images->count())
-                            <img src="{{ asset('uploads/adoptions/' . $listing->images->first()->image_path) }}"
+                            <img src="{{ asset('storage/' . $listing->images->first()->image_path) }}"
                                  alt="{{ $listing->pet_name }}"
                                  class="w-100 h-100"
                                  style="object-fit:cover;">
@@ -76,7 +76,7 @@
                             <div>
                                 <h5 class="card-title mb-0 fw-semibold">{{ $listing->pet_name }}</h5>
                                 <small class="text-muted">
-                                    <i class="bi bi-building me-1"></i>{{ $listing->shelter?->name ?? '-' }}
+                                    <i class="bi bi-building me-1"></i>{{ $listing->shelter?->shelterProfile->shelter_name ?? $listing->shelter?->name ?? '-' }}
                                 </small>
                             </div>
                         </div>
@@ -95,7 +95,7 @@
                                 </span>
                             @endif
                             <span class="badge bg-dark bg-opacity-10 text-dark">
-                                <i class="bi bi-clock me-1"></i>{{ $listing->age ?? '?' }} {{ __('mo') }}
+                                <i class="bi bi-clock me-1"></i>{{ $listing->age ?? '?' }}
                             </span>
                         </div>
 
@@ -111,10 +111,27 @@
                             </div>
                         @endif
 
-                        @if ($listing->shelter?->shelterProfile?->city)
-                            <small class="text-muted d-block mb-2">
-                                <i class="bi bi-geo-alt me-1"></i>{{ $listing->shelter->shelterProfile->city }}
-                            </small>
+                        {{-- Shelter details --}}
+                        @if ($listing->shelter?->shelterProfile)
+                            <div class="border-top pt-2 mt-1">
+                                @if ($listing->shelter->shelterProfile->city)
+                                    <small class="text-muted d-block">
+                                        <i class="bi bi-geo-alt me-1"></i>{{ $listing->shelter->shelterProfile->city }}
+                                    </small>
+                                @endif
+                                @if ($listing->shelter->shelterProfile->capacity)
+                                    <small class="text-muted d-block">
+                                        <i class="bi bi-grid me-1"></i>{{ __('Capacity:') }} {{ $listing->shelter->shelterProfile->capacity }} {{ __('animals') }}
+                                    </small>
+                                @endif
+                                @if ($listing->shelter->shelterProfile->website)
+                                    <small class="d-block">
+                                        <a href="{{ $listing->shelter->shelterProfile->website }}" target="_blank" class="text-decoration-none" style="font-size:0.8rem;">
+                                            <i class="bi bi-link-45deg me-1"></i>{{ __('View on Map') }}
+                                        </a>
+                                    </small>
+                                @endif
+                            </div>
                         @endif
                     </div>
 
@@ -161,7 +178,7 @@
                         <div class="modal-header">
                             <div>
                                 <h5 class="modal-title fw-semibold">{{ __('Apply to Adopt') }} {{ $listing->pet_name }}</h5>
-                                <small class="text-muted">{{ __('at') }} {{ $listing->shelter?->name ?? 'Unknown Shelter' }}</small>
+                                <small class="text-muted">{{ __('at') }} {{ $listing->shelter?->shelterProfile->shelter_name ?? $listing->shelter?->name ?? 'Unknown Shelter' }}</small>
                             </div>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -169,7 +186,7 @@
                             <div class="alert alert-light border mb-3">
                                 <div class="d-flex align-items-center gap-3">
                                     @if ($listing->images->count())
-                                        <img src="{{ asset('uploads/adoptions/' . $listing->images->first()->image_path) }}"
+                                        <img src="{{ asset('storage/' . $listing->images->first()->image_path) }}"
                                              alt="{{ $listing->pet_name }}"
                                              class="rounded" style="width:60px;height:60px;object-fit:cover;">
                                     @endif
@@ -178,7 +195,7 @@
                                         <div class="text-muted" style="font-size:0.8rem;">
                                             {{ $listing->species?->name ?? '' }}
                                             {{ $listing->breed ? ' - ' . $listing->breed->name : '' }}
-                                            {{ $listing->age ? ' | ' . $listing->age . ' months' : '' }}
+                                            {{ $listing->age ? ' | ' . $listing->age : '' }}
                                             {{ ' | ' . ucfirst($listing->gender ?? 'Unknown') }}
                                         </div>
                                     </div>

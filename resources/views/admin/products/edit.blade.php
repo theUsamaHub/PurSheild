@@ -129,7 +129,7 @@
                             <div class="d-flex flex-wrap gap-2 mb-3">
                                 @foreach ($product->images->sortBy('sort_order') as $image)
                                     <div class="position-relative" style="width:90px;height:90px;">
-                                        <img src="{{ Storage::url($image->image_path) }}" alt="" class="img-thumbnail w-100 h-100" style="object-fit:cover;">
+                                        <img src="{{ asset('storage/' . $image->image_path) }}" alt="" class="img-thumbnail w-100 h-100" style="object-fit:cover;">
                                         @if ($image->is_primary)
                                             <span class="position-absolute top-0 start-0 badge bg-warning" style="font-size:0.6rem;"><i class="bi bi-star-fill"></i></span>
                                         @endif

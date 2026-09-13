@@ -39,8 +39,12 @@
                 <div class="card h-100 border-0 shadow-sm">
                     <div class="card-body">
                         <div class="d-flex align-items-center mb-3">
-                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:56px;height:56px;background:linear-gradient(135deg,#1a6b3c,#2e9e5a);">
-                                <span class="text-white fw-bold fs-5">{{ substr($vet->name, 0, 1) }}</span>
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 overflow-hidden" style="width:56px;height:56px;background:linear-gradient(135deg,#1a6b3c,#2e9e5a);">
+                                @if ($vet->profile_image)
+                                    <img src="{{ asset('storage/' . $vet->profile_image) }}" alt="{{ $vet->name }}" style="width:56px;height:56px;object-fit:cover;">
+                                @else
+                                    <span class="text-white fw-bold fs-5">{{ substr($vet->name, 0, 1) }}</span>
+                                @endif
                             </div>
                             <div class="ms-3">
                                 <h6 class="mb-0 fw-semibold">

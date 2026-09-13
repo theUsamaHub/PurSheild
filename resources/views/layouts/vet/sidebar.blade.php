@@ -25,12 +25,12 @@
                 <small class="text-uppercase text-secondary px-3 fw-semibold" style="font-size:0.7rem;letter-spacing:0.05em;">{{ __('Appointments') }}</small>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('vet.appointments.*') ? 'active' : '' }}" href="#">
+                <a class="nav-link {{ request()->routeIs('vet.appointments.*') ? 'active' : '' }}" href="{{ route('vet.appointments.index') }}">
                     <i class="bi bi-calendar-check"></i> {{ __('My Appointments') }}
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('vet.availability.*') ? 'active' : '' }}" href="#">
+                <a class="nav-link {{ request()->routeIs('vet.availability.*') ? 'active' : '' }}" href="{{ route('vet.availability.index') }}">
                     <i class="bi bi-clock"></i> {{ __('Availability') }}
                 </a>
             </li>
@@ -39,12 +39,12 @@
                 <small class="text-uppercase text-secondary px-3 fw-semibold" style="font-size:0.7rem;letter-spacing:0.05em;">{{ __('Patients') }}</small>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('vet.patients.*') ? 'active' : '' }}" href="#">
+                <a class="nav-link {{ request()->routeIs('vet.patients.*') ? 'active' : '' }}" href="{{ route('vet.patients.index') }}">
                     <i class="bi bi-heart-pulse"></i> {{ __('My Patients') }}
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('vet.treatments.*') ? 'active' : '' }}" href="#">
+                <a class="nav-link {{ request()->routeIs('vet.treatments.*') ? 'active' : '' }}" href="{{ route('vet.treatments.index') }}">
                     <i class="bi bi-clipboard2-pulse"></i> {{ __('Treatments') }}
                 </a>
             </li>
@@ -53,7 +53,7 @@
                 <small class="text-uppercase text-secondary px-3 fw-semibold" style="font-size:0.7rem;letter-spacing:0.05em;">{{ __('Account') }}</small>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('vet.reviews.*') ? 'active' : '' }}" href="#">
+                <a class="nav-link {{ request()->routeIs('vet.reviews.*') ? 'active' : '' }}" href="{{ route('vet.reviews.index') }}">
                     <i class="bi bi-star"></i> {{ __('My Reviews') }}
                 </a>
             </li>

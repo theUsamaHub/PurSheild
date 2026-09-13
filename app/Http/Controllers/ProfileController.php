@@ -69,6 +69,7 @@ class ProfileController extends Controller
             $shelterData = collect($validated)->only([
                 'shelter_name', 'description', 'shelter_address',
                 'city', 'contact_number', 'website', 'capacity',
+                'latitude', 'longitude',
             ])->toArray();
 
             if ($user->shelterProfile) {

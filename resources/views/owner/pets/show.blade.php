@@ -22,10 +22,10 @@
                     <div class="text-center mb-3">
                         @php $primaryImage = $pet->images->firstWhere('is_primary') ?? $pet->images->first(); @endphp
                         @if ($primaryImage)
-                            <img src="{{ Storage::url($primaryImage->image_path) }}" alt="{{ $pet->name }}"
+                            <img src="{{ asset('storage/' . $primaryImage->image_path) }}" alt="{{ $pet->name }}"
                                 class="rounded-circle mb-3" style="width:96px;height:96px;object-fit:cover;">
                         @elseif ($pet->profile_image)
-                            <img src="{{ Storage::url($pet->profile_image) }}" alt="{{ $pet->name }}"
+                            <img src="{{ asset('storage/' . $pet->profile_image) }}" alt="{{ $pet->name }}"
                                 class="rounded-circle mb-3" style="width:96px;height:96px;object-fit:cover;">
                         @else
                             <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
@@ -103,7 +103,7 @@
                         <div class="d-flex flex-wrap gap-2">
                             @foreach ($pet->images->sortBy('sort_order') as $image)
                                 <div class="position-relative">
-                                    <img src="{{ Storage::url($image->image_path) }}" alt=""
+                                    <img src="{{ asset('storage/' . $image->image_path) }}" alt=""
                                         class="img-thumbnail" style="width:80px;height:80px;object-fit:cover;">
                                     @if ($image->is_primary)
                                         <span class="position-absolute top-0 end-0 badge bg-warning" style="font-size:0.55rem;">
@@ -259,7 +259,7 @@
                                             <small class="text-muted">{{ $doc->document_type ?: __('Medical Document') }} &middot; {{ $doc->created_at->format('M d, Y') }}</small>
                                         </div>
                                     </div>
-                                    <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                    <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="btn btn-outline-secondary btn-sm">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                 </div>
