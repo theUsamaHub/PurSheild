@@ -139,6 +139,8 @@ Route::middleware(['auth', 'verified', 'role:shelter'])->prefix('shelter')->name
     Route::put('/listings/{listing}', [\App\Http\Controllers\Shelter\ListingController::class, 'update'])->name('listings.update');
     Route::delete('/listings/{listing}', [\App\Http\Controllers\Shelter\ListingController::class, 'destroy'])->name('listings.destroy');
 
+    Route::get('/adoption-history', [\App\Http\Controllers\Shelter\ApplicationController::class, 'history'])->name('history.index');
+
     // Applications
     Route::get('/applications', [\App\Http\Controllers\Shelter\ApplicationController::class, 'index'])->name('applications.index');
     Route::get('/applications/{application}', [\App\Http\Controllers\Shelter\ApplicationController::class, 'show'])->name('applications.show');
@@ -150,6 +152,13 @@ Route::middleware(['auth', 'verified', 'role:shelter'])->prefix('shelter')->name
 
     // Care Status
     Route::get('/care-status', [\App\Http\Controllers\Shelter\CareController::class, 'index'])->name('care-status.index');
+    Route::get('/care-status/create', [\App\Http\Controllers\Shelter\CareController::class, 'create'])->name('care-status.create');
+    Route::get('/care-status/{log}', [\App\Http\Controllers\Shelter\CareController::class, 'show'])->name('care-status.show');
+    Route::get('/care-status/{log}/edit', [\App\Http\Controllers\Shelter\CareController::class, 'edit'])->name('care-status.edit');
+    Route::put('/care-status/{log}', [\App\Http\Controllers\Shelter\CareController::class, 'update'])->name('care-status.update');
+    Route::get('/notifications', [\App\Http\Controllers\Shelter\NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/read-all', [\App\Http\Controllers\Shelter\NotificationController::class, 'readAll'])->name('notifications.readAll');
+    Route::patch('/notifications/{source}/{notification}/read', [\App\Http\Controllers\Shelter\NotificationController::class, 'read'])->whereIn('source',['practice','system'])->name('notifications.read');
     Route::post('/care-status', [\App\Http\Controllers\Shelter\CareController::class, 'store'])->name('care-status.store');
     Route::delete('/care-status/{log}', [\App\Http\Controllers\Shelter\CareController::class, 'destroy'])->name('care-status.destroy');
 });

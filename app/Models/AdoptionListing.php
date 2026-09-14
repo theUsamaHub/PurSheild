@@ -11,7 +11,7 @@ class AdoptionListing extends Model
 {
     protected $fillable = [
         'shelter_id', 'species_id', 'breed_id', 'pet_name', 'age',
-        'gender', 'health_status', 'description', 'status',
+        'gender', 'health_state', 'health_status', 'description', 'status',
     ];
 
     protected $casts = [

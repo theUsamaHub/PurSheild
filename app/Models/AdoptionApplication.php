@@ -11,8 +11,10 @@ class AdoptionApplication extends Model
         'listing_id', 'applicant_id', 'message', 'phone', 'address',
         'home_type', 'has_yard', 'living_situation', 'has_other_pets',
         'other_pets_details', 'has_children', 'children_ages', 'work_schedule',
-        'pet_experience', 'why_adopt', 'status', 'shelter_response',
+        'pet_experience', 'why_adopt', 'decided_at', 'completed_at', 'status', 'shelter_response',
     ];
+
+    protected $casts = ['decided_at' => 'datetime', 'completed_at' => 'datetime'];
 
     public function listing(): BelongsTo
     {

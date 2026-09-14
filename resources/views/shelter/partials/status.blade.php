@@ -1,0 +1,5 @@
+@php
+    $labels=['healthy'=>'Healthy','under_treatment'=>'Under Treatment','vaccination_due'=>'Vaccination Due','available'=>'Available','pending'=>'Pending','reviewing'=>'Reviewing','approved'=>'Approved','completed'=>'Completed','rejected'=>'Rejected','adopted'=>'Adopted','inactive'=>'Not Listed','follow_up'=>'Follow-up','feeding'=>'Feeding','grooming'=>'Grooming','medical'=>'Medical','vaccination'=>'Vaccination','other'=>'Other'];
+    $tones=['healthy'=>'green','available'=>'green','approved'=>'green','completed'=>'green','feeding'=>'green','under_treatment'=>'red','medical'=>'red','rejected'=>'red','vaccination_due'=>'amber','pending'=>'amber','follow_up'=>'amber','reviewing'=>'blue','vaccination'=>'blue','adopted'=>'purple','grooming'=>'purple','inactive'=>'gray'];
+@endphp
+<span class="sh-badge sh-{{ $tones[$status] ?? 'gray' }}">@if($badgeIcon ?? false) @include('shelter.partials.icon',['name'=>$badgeIcon]) @else <span class="sh-dot"></span> @endif {{ $statusLabel ?? $labels[$status] ?? ucfirst($status) }}</span>

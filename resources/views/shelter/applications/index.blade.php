@@ -1,134 +1,21 @@
 @extends('layouts.shelter.app')
-
+@section('title','Adoption Requests')
 @section('content')
-<div class="mb-4">
-    <div class="d-flex justify-content-between align-items-center">
-        <h2 class="h4 mb-0 fw-semibold">{{ __('Adoption Applications') }}</h2>
-    </div>
-</div>
-
-{{-- Stats --}}
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card border-0" style="border-left:4px solid var(--fs-primary);">
-            <div class="card-body py-2">
-                <div class="text-muted" style="font-size:0.75rem;">{{ __('Total') }}</div>
-                <div class="fw-bold fs-5">{{ $stats['total'] }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0" style="border-left:4px solid var(--fs-accent);">
-            <div class="card-body py-2">
-                <div class="text-muted" style="font-size:0.75rem;">{{ __('Pending') }}</div>
-                <div class="fw-bold fs-5">{{ $stats['pending'] }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0" style="border-left:4px solid var(--fs-success);">
-            <div class="card-body py-2">
-                <div class="text-muted" style="font-size:0.75rem;">{{ __('Approved') }}</div>
-                <div class="fw-bold fs-5">{{ $stats['approved'] }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0" style="border-left:4px solid var(--fs-danger);">
-            <div class="card-body py-2">
-                <div class="text-muted" style="font-size:0.75rem;">{{ __('Rejected') }}</div>
-                <div class="fw-bold fs-5">{{ $stats['rejected'] }}</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- Filter --}}
-<div class="card mb-4">
-    <div class="card-body">
-        <form method="GET" action="{{ route('shelter.applications.index') }}" class="row g-3">
-            <div class="col-md-5">
-                <input type="text" class="form-control" name="search" placeholder="{{ __('Search by name, pet...') }}" value="{{ request('search') }}">
-            </div>
-            <div class="col-md-4">
-                <select class="form-select" name="status">
-                    <option value="">{{ __('All Statuses') }}</option>
-                    <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>{{ __('Pending') }}</option>
-                    <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>{{ __('Approved') }}</option>
-                    <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>{{ __('Rejected') }}</option>
-                    <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>{{ __('Completed') }}</option>
-                </select>
-            </div>
-            <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-outline-secondary flex-grow-1">
-                    <i class="bi bi-search me-1"></i>{{ __('Filter') }}
-                </button>
-                <a href="{{ route('shelter.applications.index') }}" class="btn btn-outline-danger"><i class="bi bi-x"></i></a>
-            </div>
-        </form>
-    </div>
-</div>
-
-{{-- Applications Table --}}
-<div class="card">
-    <div class="card-body p-0">
-        @if($applications->count())
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="font-size:0.8rem;">{{ __('Applicant') }}</th>
-                            <th style="font-size:0.8rem;">{{ __('Pet') }}</th>
-                            <th style="font-size:0.8rem;">{{ __('Date') }}</th>
-                            <th style="font-size:0.8rem;">{{ __('Status') }}</th>
-                            <th style="font-size:0.8rem;"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($applications as $app)
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width:32px;height:32px;background:linear-gradient(135deg,#1a6b3c,#2e9e5a);">
-                                            <span class="text-white fw-semibold" style="font-size:0.7rem;">{{ substr($app->applicant->name ?? '?', 0, 1) }}</span>
-                                        </div>
-                                        <div>
-                                            <div class="fw-semibold" style="font-size:0.85rem;">{{ $app->applicant->name ?? '-' }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td style="font-size:0.85rem;">{{ $app->listing->pet_name ?? '-' }}</td>
-                                <td style="font-size:0.85rem;">{{ $app->created_at->format('M d, Y') }}</td>
-                                <td>
-                                    @if($app->status === 'pending')
-                                        <span class="badge bg-warning text-dark">Pending</span>
-                                    @elseif($app->status === 'approved')
-                                        <span class="badge bg-success">Approved</span>
-                                    @elseif($app->status === 'rejected')
-                                        <span class="badge bg-danger">Rejected</span>
-                                    @else
-                                        <span class="badge bg-secondary">{{ ucfirst($app->status) }}</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <a href="{{ route('shelter.applications.show', $app) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @else
-            <div class="text-center py-5">
-                <i class="bi bi-inbox" style="font-size:3rem;opacity:0.3;"></i>
-                <p class="mt-2 text-muted">{{ __('No applications found.') }}</p>
-            </div>
-        @endif
-    </div>
-    @if($applications->hasPages())
-        <div class="card-footer">{{ $applications->links() }}</div>
-    @endif
+<div class="sh-breadcrumb"><a href="{{ route('shelter.dashboard') }}"><i class="bi bi-house-door-fill"></i> Dashboard</a><span>›</span><span>Adoption Requests</span></div>
+<div class="sh-heading"><div><h1>Adoption Requests @include('shelter.partials.icon',['name'=>'requests'])</h1><p>Review and manage adoption applications from potential pet owners.</p></div></div>
+<div class="sh-request-stats">@include('shelter.partials.stats',['compact'=>true,'cards'=>[
+['label'=>'Total Requests','value'=>$stats['total'],'icon'=>'document','tone'=>'blue','url'=>route('shelter.applications.index')],
+['label'=>'Pending','value'=>$stats['pending'],'icon'=>'pending','tone'=>'amber','url'=>route('shelter.applications.index',['status'=>'pending'])],
+['label'=>'Reviewing','value'=>$stats['reviewing'],'icon'=>'reviewing','tone'=>'blue','url'=>route('shelter.applications.index',['status'=>'reviewing'])],
+['label'=>'Approved','value'=>$stats['approved'],'icon'=>'check','tone'=>'green','url'=>route('shelter.applications.index',['status'=>'approved'])],
+['label'=>'Rejected','value'=>$stats['rejected'],'icon'=>'reject','tone'=>'red','url'=>route('shelter.applications.index',['status'=>'rejected'])]
+]])</div>
+<div class="sh-tabs-row"><nav class="sh-tabs" aria-label="Application status">@foreach([''=>'All','pending'=>'Pending','reviewing'=>'Reviewing','approved'=>'Approved','rejected'=>'Rejected'] as $value=>$label)<a class="{{ request('status','')===$value?'active':'' }}" href="{{ route('shelter.applications.index',array_filter(['status'=>$value,'search'=>request('search')],fn($v)=>$v!==null&&$v!=='')) }}">{{ $label }} ({{ $stats[$value?:'total'] }})</a>@endforeach</nav>
+<form class="sh-filters" method="GET" action="{{ route('shelter.applications.index') }}" data-filters><input type="hidden" name="status" value="{{ request('status') }}"><label class="sh-field sh-search">@include('shelter.partials.icon',['name'=>'search'])<input type="search" name="search" placeholder="Search by applicant name, pet name..." value="{{ request('search') }}" aria-label="Search adoption requests" maxlength="200"><button type="submit" aria-label="Search adoption requests"><i class="bi bi-arrow-return-left"></i></button></label>@if(request('search'))<a class="sh-button sh-small" href="{{ route('shelter.applications.index') }}">Clear</a>@endif</form></div>
+<div class="sh-request-grid {{ !$selected?'no-detail':'' }}"><section class="sh-card"><div class="sh-table-wrap" style="padding-top:12px"><table class="sh-table sh-requests-table"><thead><tr>@foreach(['#','Pet','Applicant','Applied On','Status','Actions'] as $column)<th>{{ $column }}</th>@endforeach</tr></thead><tbody>
+@forelse($applications as $application)<tr><td>{{ $applications->firstItem()+$loop->index }}</td><td><div class="sh-pet">@include('shelter.partials.animal-photo',['animal'=>$application->listing])<div><strong>{{ $application->listing->pet_name }}</strong><small>{{ $application->listing->breed?->name ?? 'Mixed Breed' }}</small></div></div></td><td><div class="sh-pet">@include('shelter.partials.person',['person'=>$application->applicant])<div><strong>{{ $application->applicant->name }}</strong><small>{{ $application->applicant->email }}<br>{{ $application->phone ?: $application->applicant->phone }}</small></div></div></td><td class="text-nowrap">{{ $application->created_at->format('M d, Y') }}<br>{{ $application->created_at->format('h:i A') }}</td><td>@include('shelter.partials.status',['status'=>$application->status])</td><td><div class="sh-actions"><a class="sh-button sh-small sh-view" href="{{ route('shelter.applications.index',array_merge(request()->except(['selected','panel']),['selected'=>$application->id])) }}">View</a><div class="dropdown"><button type="button" class="sh-icon-button" data-bs-toggle="dropdown" aria-label="More actions for application {{ $application->id }}">@include('shelter.partials.icon',['name'=>'more'])</button><ul class="dropdown-menu dropdown-menu-end"><li><a class="dropdown-item" href="{{ route('shelter.applications.show',$application) }}">Full application</a></li><li><a class="dropdown-item" href="{{ route('shelter.listings.show',$application->listing) }}">View animal</a></li></ul></div></div></td></tr>
+@empty<tr><td colspan="6"><div class="sh-empty">@include('shelter.partials.icon',['name'=>'requests'])<strong>No requests found</strong>Try clearing your filters.</div></td></tr>@endforelse
+</tbody></table></div>@include('shelter.partials.pagination',['items'=>$applications,'noun'=>'requests'])</section>
+@if($selected)@include('shelter.applications.detail',['application'=>$selected,'closeUrl'=>route('shelter.applications.index',array_merge(request()->except('selected'),['panel'=>'closed']))])@endif
 </div>
 @endsection

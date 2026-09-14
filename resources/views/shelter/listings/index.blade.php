@@ -1,152 +1,31 @@
 @extends('layouts.shelter.app')
-
+@section('title','My Animals')
 @section('content')
-<div class="mb-4">
-    <div class="d-flex justify-content-between align-items-center">
-        <h2 class="h4 mb-0 fw-semibold">{{ __('My Listings') }}</h2>
-        <a href="{{ route('shelter.listings.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus me-1"></i>{{ __('New Listing') }}
-        </a>
-    </div>
-</div>
-
-@if(Auth::user()->status !== 'active')
-    <div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
-        <i class="bi bi-exclamation-triangle me-2 fs-5"></i>
-        <div>
-            <strong>{{ __('Listings not publicly visible') }}</strong> — {{ __('Your account is pending verification. Your listings will not appear in public adoption pages until an admin verifies your account.') }}
-        </div>
-    </div>
-@endif
-
-{{-- Stats --}}
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card border-0" style="border-left:4px solid var(--fs-primary);">
-            <div class="card-body py-2">
-                <div class="text-muted" style="font-size:0.75rem;">{{ __('Total') }}</div>
-                <div class="fw-bold fs-5">{{ $stats['total'] }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0" style="border-left:4px solid var(--fs-success);">
-            <div class="card-body py-2">
-                <div class="text-muted" style="font-size:0.75rem;">{{ __('Available') }}</div>
-                <div class="fw-bold fs-5">{{ $stats['available'] }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0" style="border-left:4px solid var(--fs-info);">
-            <div class="card-body py-2">
-                <div class="text-muted" style="font-size:0.75rem;">{{ __('Pending') }}</div>
-                <div class="fw-bold fs-5">{{ $stats['pending'] }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0" style="border-left:4px solid var(--fs-accent);">
-            <div class="card-body py-2">
-                <div class="text-muted" style="font-size:0.75rem;">{{ __('Adopted') }}</div>
-                <div class="fw-bold fs-5">{{ $stats['adopted'] }}</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- Filter --}}
-<div class="card mb-4">
-    <div class="card-body">
-        <form method="GET" action="{{ route('shelter.listings.index') }}" class="row g-3">
-            <div class="col-md-5">
-                <input type="text" class="form-control" name="search" placeholder="{{ __('Search by name...') }}" value="{{ request('search') }}">
-            </div>
-            <div class="col-md-4">
-                <select class="form-select" name="status">
-                    <option value="">{{ __('All Statuses') }}</option>
-                    <option value="available" {{ request('status') === 'available' ? 'selected' : '' }}>{{ __('Available') }}</option>
-                    <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>{{ __('Pending') }}</option>
-                    <option value="adopted" {{ request('status') === 'adopted' ? 'selected' : '' }}>{{ __('Adopted') }}</option>
-                    <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>{{ __('Inactive') }}</option>
-                </select>
-            </div>
-            <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-outline-secondary flex-grow-1">
-                    <i class="bi bi-search me-1"></i>{{ __('Filter') }}
-                </button>
-                <a href="{{ route('shelter.listings.index') }}" class="btn btn-outline-danger"><i class="bi bi-x"></i></a>
-            </div>
-        </form>
-    </div>
-</div>
-
-{{-- Listings Grid --}}
-<div class="row g-4">
-    @forelse($listings as $listing)
-        <div class="col-md-6 col-lg-4">
-            <div class="card h-100 border-0 shadow-sm">
-                @if($listing->images->count())
-                    <img src="{{ asset('storage/' . $listing->images->first()->image_path) }}" class="card-img-top" alt="{{ $listing->pet_name }}" style="height:200px;object-fit:cover;">
-                @else
-                    <div class="card-img-top d-flex align-items-center justify-content-center" style="height:200px;background:#f0f7f2;">
-                        <i class="bi bi-heart" style="font-size:3rem;opacity:0.2;color:#1a6b3c;"></i>
-                    </div>
-                @endif
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h6 class="fw-bold mb-0">{{ $listing->pet_name }}</h6>
-                        @if($listing->status === 'available')
-                            <span class="badge bg-success">Available</span>
-                        @elseif($listing->status === 'adopted')
-                            <span class="badge bg-primary">Adopted</span>
-                        @elseif($listing->status === 'pending')
-                            <span class="badge bg-warning text-dark">Pending</span>
-                        @else
-                            <span class="badge bg-secondary">Inactive</span>
-                        @endif
-                    </div>
-                    <div class="text-muted mb-2" style="font-size:0.8rem;">
-                        {{ $listing->species->name ?? '-' }} &middot; {{ $listing->breed->name ?? '-' }}
-                        @if($listing->gender) &middot; {{ ucfirst($listing->gender) }} @endif
-                    </div>
-                    @if($listing->health_status)
-                        <div class="mb-2"><small class="text-muted">Health:</small> <small>{{ $listing->health_status }}</small></div>
-                    @endif
-                    @if($listing->description)
-                        <p class="text-muted mb-0" style="font-size:0.8rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ $listing->description }}</p>
-                    @endif
-                </div>
-                <div class="card-footer bg-white border-0 d-flex gap-2">
-                    <a href="{{ route('shelter.listings.show', $listing) }}" class="btn btn-sm btn-outline-primary flex-grow-1">
-                        <i class="bi bi-eye me-1"></i>{{ __('View') }}
-                    </a>
-                    <a href="{{ route('shelter.listings.edit', $listing) }}" class="btn btn-sm btn-outline-secondary flex-grow-1">
-                        <i class="bi bi-pencil me-1"></i>{{ __('Edit') }}
-                    </a>
-                    <form action="{{ route('shelter.listings.destroy', $listing) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Are you sure?') }}')">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    @empty
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body text-center py-5">
-                    <i class="bi bi-bookmark-heart" style="font-size:3rem;opacity:0.3;"></i>
-                    <p class="mt-2 text-muted">{{ __('No listings found.') }}</p>
-                    <a href="{{ route('shelter.listings.create') }}" class="btn btn-primary btn-sm">
-                        <i class="bi bi-plus me-1"></i>{{ __('Create Your First Listing') }}
-                    </a>
-                </div>
-            </div>
-        </div>
-    @endforelse
-</div>
-
-@if($listings->hasPages())
-    <div class="mt-4">{{ $listings->links() }}</div>
-@endif
+<div class="sh-heading"><div><h1>My Animals @include('shelter.partials.icon',['name'=>'paw'])</h1><p>Manage all animals registered in your shelter.</p></div><div class="sh-heading-actions"><div class="sh-quote">Every animal<br>has a brighter<br>tomorrow ♥</div><a class="sh-button sh-primary sh-button-large" href="{{ route('shelter.listings.create') }}">@include('shelter.partials.icon',['name'=>'plus']) Add Animal</a></div></div>
+<form action="{{ route('shelter.listings.index') }}" method="GET" class="sh-filters" id="animalFilters" data-filters>
+<label class="sh-field sh-search">@include('shelter.partials.icon',['name'=>'search'])<input type="search" name="search" value="{{ request('search') }}" placeholder="Search animals..." aria-label="Search animals" maxlength="200"><button type="submit" aria-label="Apply animal filters"><i class="bi bi-arrow-return-left"></i></button></label>
+<label class="sh-field">@include('shelter.partials.icon',['name'=>'paw'])<select name="species_id" aria-label="Species"><option value="">Species</option>@foreach($species as $item)<option value="{{ $item->id }}" @selected(request('species_id')==$item->id)>{{ $item->name }}</option>@endforeach</select></label>
+<label class="sh-field">@include('shelter.partials.icon',['name'=>'tag'])<select name="breed_id" aria-label="Breed"><option value="">Breed</option>@foreach($breeds as $item)<option value="{{ $item->id }}" @selected(request('breed_id')==$item->id)>{{ $item->name }}</option>@endforeach</select></label>
+<label class="sh-field">@include('shelter.partials.icon',['name'=>'health'])<select name="health_state" aria-label="Health Status"><option value="">Health Status</option>@foreach(['healthy'=>'Healthy','under_treatment'=>'Under Treatment','vaccination_due'=>'Vaccination Due'] as $value=>$label)<option value="{{ $value }}" @selected(request('health_state')===$value)>{{ $label }}</option>@endforeach</select></label>
+<label class="sh-field">@include('shelter.partials.icon',['name'=>'requests'])<select name="status" aria-label="Adoption Status"><option value="">Adoption Status</option>@foreach(['available'=>'Available','pending'=>'Reserved','adopted'=>'Adopted','inactive'=>'Not Listed'] as $value=>$label)<option value="{{ $value }}" @selected(request('status')===$value)>{{ $label }}</option>@endforeach</select></label>
+@if(collect(request()->only(['search','species_id','breed_id','health_state','status']))->filter()->isNotEmpty())<a class="sh-button" href="{{ route('shelter.listings.index') }}">Clear Filters</a>@endif
+</form>
+<div class="sh-animal-stats">@include('shelter.partials.stats',['cards'=>[
+['label'=>'All Animals','value'=>$stats['total'],'icon'=>'paw','tone'=>'green','description'=>'Total animals in your care','ghost'=>'requests','url'=>route('shelter.listings.index')],
+['label'=>'Available','value'=>$stats['available'],'icon'=>'dashboard','tone'=>'blue','description'=>'Ready for their forever home','url'=>route('shelter.listings.index',['status'=>'available'])],
+['label'=>'Under Treatment','value'=>$stats['under_treatment'],'icon'=>'medical','tone'=>'red','description'=>'Receiving medical care','ghost'=>'health','url'=>route('shelter.listings.index',['health_state'=>'under_treatment'])],
+['label'=>'Adopted','value'=>$stats['adopted'],'icon'=>'heart','tone'=>'purple','description'=>'Found their happy homes','url'=>route('shelter.listings.index',['status'=>'adopted'])]
+]])</div>
+<section class="sh-card"><div class="sh-card-header"><h2>@include('shelter.partials.icon',['name'=>'paw']) All Animals ({{ $listings->total() }})</h2><label class="sh-sort">Sort by: <select name="sort" form="animalFilters" aria-label="Sort animals" onchange="document.getElementById('animalFilters').requestSubmit()">@foreach(['newest'=>'Newest First','oldest'=>'Oldest First','name'=>'Name A–Z'] as $value=>$label)<option value="{{ $value }}" @selected(request('sort','newest')===$value)>{{ $label }}</option>@endforeach</select></label></div>
+<div class="sh-table-wrap"><table class="sh-table sh-animal-table"><thead><tr>@foreach(['Photo','Name','Species','Breed','Age','Health','Adoption','Actions'] as $column)<th>{{ $column }}</th>@endforeach</tr></thead><tbody>
+@forelse($listings as $animal)<tr><td>@include('shelter.partials.animal-photo',['animal'=>$animal])</td><td><strong>{{ $animal->pet_name }}</strong></td><td><span class="sh-species">@include('shelter.partials.icon',['name'=>in_array(strtolower($animal->species?->name??''),['dog','cat'])?strtolower($animal->species->name):'paw']){{ $animal->species?->name ?? '—' }}</span></td><td>{{ $animal->breed?->name ?? 'Mixed Breed' }}</td><td class="text-nowrap">{{ $animal->age ?: '—' }}</td><td>@include('shelter.partials.status',['status'=>$animal->health_state])</td><td>@include('shelter.partials.status',['status'=>$animal->status,'statusLabel'=>['pending'=>'Reserved','inactive'=>'Not Listed','available'=>'Available','adopted'=>'Adopted'][$animal->status]])</td><td><div class="sh-actions"><a class="sh-button sh-small sh-view" href="{{ route('shelter.listings.show',$animal) }}">View</a><a class="sh-button sh-small" href="{{ route('shelter.listings.edit',$animal) }}">Edit</a><div class="dropdown"><button type="button" class="sh-icon-button" data-bs-toggle="dropdown" aria-label="More actions for {{ $animal->pet_name }}">@include('shelter.partials.icon',['name'=>'more'])</button><ul class="dropdown-menu dropdown-menu-end"><li><a class="dropdown-item" href="{{ route('shelter.care-status.create',['listing_id'=>$animal->id]) }}">Add care record</a></li><li><a class="dropdown-item" href="{{ route('shelter.care-status.index',['listing_id'=>$animal->id]) }}">Care history</a></li>@if(!in_array($animal->status,['inactive','adopted']))<li><form method="POST" action="{{ route('shelter.listings.destroy',$animal) }}" onsubmit="return confirm('Archive this animal? Its records will be preserved.')">@csrf @method('DELETE')<button class="dropdown-item text-danger">Archive animal</button></form></li>@endif</ul></div></div></td></tr>
+@empty<tr><td colspan="8"><div class="sh-empty">@include('shelter.partials.icon',['name'=>'paw'])<strong>No animals found</strong>Try different filters or add an animal.</div></td></tr>@endforelse
+</tbody></table></div>@if($listings->hasPages())@include('shelter.partials.pagination',['items'=>$listings,'noun'=>'animals'])@endif</section>
+<div class="sh-animals-bottom"><section class="sh-card"><div class="sh-card-header"><h2>@include('shelter.partials.icon',['name'=>'clock']) Recently Added</h2><a href="{{ route('shelter.listings.index',['sort'=>'newest']) }}">View All</a></div><div class="sh-recent-animals">@forelse($recentListings as $animal)<a class="sh-recent-animal" href="{{ route('shelter.listings.show',$animal) }}">@include('shelter.partials.animal-photo',['animal'=>$animal])<div><strong>{{ $animal->pet_name }}</strong><small>{{ $animal->breed?->name ?? 'Mixed Breed' }}</small><small>{{ $animal->created_at->format('M d, Y') }}</small>@if($animal->created_at->gte(now()->subDays(7)))<span class="sh-badge sh-green" style="margin-top:5px;min-height:22px;padding:3px 9px">New</span>@endif</div></a>@empty<div class="sh-empty">No animals added yet.</div>@endforelse</div></section>
+<section class="sh-card"><div class="sh-card-header"><h2>@include('shelter.partials.icon',['name'=>'bar-chart-fill']) Animal Status Overview</h2></div>
+@php
+ $colors=['#2cb175','#8954e8','#ff902b','#238cff','#e84e80'];$segments=[];$angle=0;
+ foreach($speciesCounts as $i=>$group){$next=$angle+($stats['total']?($group->total/$stats['total'])*360:0);$segments[]=$colors[$i%5].' '.$angle.'deg '.$next.'deg';$angle=$next;}
+@endphp
+<div class="sh-overview"><div class="sh-donut" style="background:{{ $segments?'conic-gradient('.implode(',',$segments).')':'#e8edf3' }}"><div><strong>{{ $stats['total'] }}</strong><small>Animals</small></div></div><div class="sh-legend">@foreach($speciesCounts as $group)<div class="sh-legend-row"><span class="sh-dot" style="color:{{ $colors[$loop->index%5] }}"></span><span>{{ $group->species?->name ?? 'Other' }}</span><strong>{{ $group->total }}</strong><span class="sh-bar"><span style="width:{{ $stats['total']?round($group->total/$stats['total']*100):0 }}%;background:{{ $colors[$loop->index%5] }}"></span></span><span>{{ $stats['total']?round($group->total/$stats['total']*100):0 }}%</span></div>@endforeach</div><div class="sh-overview-note">@include('shelter.partials.icon',['name'=>'paw'])Different animals<br>Same second chances<span>♡</span></div></div></section></div>
 @endsection

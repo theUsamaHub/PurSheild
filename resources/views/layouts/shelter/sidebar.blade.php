@@ -1,73 +1,14 @@
-<aside class="sidebar d-none d-lg-flex flex-column" id="sidebar">
-    <div class="p-3 border-bottom border-secondary">
-        <a href="{{ route('shelter.dashboard') }}" class="text-decoration-none d-flex align-items-center">
-            <div class="d-flex align-items-center justify-content-center rounded" style="width:36px;height:36px;background:linear-gradient(135deg,#1a6b3c,#2e9e5a);">
-                <i class="bi bi-shield-check text-white fs-6"></i>
-            </div>
-            <span class="text-white fw-semibold ms-2 fs-6">FurShield</span>
-        </a>
-    </div>
-
-    <nav class="flex-grow-1 py-3 overflow-auto">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('shelter.dashboard') ? 'active' : '' }}" href="{{ route('shelter.dashboard') }}">
-                    <i class="bi bi-speedometer2"></i> {{ __('Dashboard') }}
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}" href="{{ route('profile.edit') }}">
-                    <i class="bi bi-person"></i> {{ __('Profile') }}
-                </a>
-            </li>
-
-            <li class="nav-item mt-2">
-                <small class="text-uppercase text-secondary px-3 fw-semibold" style="font-size:0.7rem;letter-spacing:0.05em;">{{ __('Adoption') }}</small>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('shelter.listings.*') ? 'active' : '' }}" href="{{ route('shelter.listings.index') }}">
-                    <i class="bi bi-bookmark-heart"></i> {{ __('My Listings') }}
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('shelter.applications.*') ? 'active' : '' }}" href="{{ route('shelter.applications.index') }}">
-                    <i class="bi bi-envelope"></i> {{ __('Applications') }}
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('shelter.care-status.*') ? 'active' : '' }}" href="{{ route('shelter.care-status.index') }}">
-                    <i class="bi bi-clipboard2-pulse"></i> {{ __('Care Status') }}
-                </a>
-            </li>
-
-            <li class="nav-item mt-2">
-                <small class="text-uppercase text-secondary px-3 fw-semibold" style="font-size:0.7rem;letter-spacing:0.05em;">{{ __('Account') }}</small>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('shelter.reviews.*') ? 'active' : '' }}" href="{{ route('shelter.reviews.index') }}">
-                    <i class="bi bi-star"></i> {{ __('My Reviews') }}
-                </a>
-            </li>
-        </ul>
-    </nav>
-
-    <div class="p-3 border-top border-secondary">
-        <div class="d-flex align-items-center">
-            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:36px;height:36px;background:linear-gradient(135deg,#f59e0b,#fbbf24);">
-                <span class="text-white fw-semibold" style="font-size:0.875rem;">{{ substr(Auth::user()->name, 0, 1) }}</span>
-            </div>
-            <div class="ms-2 overflow-hidden">
-                <div class="text-white fw-medium text-truncate" style="font-size:0.875rem;">{{ Auth::user()->name }}</div>
-                <div class="text-secondary text-truncate" style="font-size:0.75rem;">
-                    @if(Auth::user()->status === 'active')
-                        <i class="bi bi-check-circle-fill text-success" style="font-size:0.6rem;"></i> {{ __('Verified Shelter') }}
-                    @else
-                        <i class="bi bi-clock-fill text-warning" style="font-size:0.6rem;"></i> {{ __('Pending Verification') }}
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-</aside>
-
-<div class="sidebar-overlay d-lg-none" id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1040;" onclick="toggleSidebar()"></div>
+<aside class="sh-sidebar" id="shelterSidebar">
+<a class="sh-brand" href="{{ route('shelter.dashboard') }}">@include('shelter.partials.icon',['name'=>'paw'])<span><strong>FurShield</strong><small>Shelter Panel</small></span></a>
+<nav class="sh-nav" aria-label="Shelter navigation">
+@foreach([
+ ['dashboard','Dashboard','shelter.dashboard','shelter.dashboard'], ['paw','My Animals','shelter.listings.index','shelter.listings.*'],
+ ['care','Care Records','shelter.care-status.index','shelter.care-status.*'], ['requests','Adoption Requests','shelter.applications.index','shelter.applications.*'],
+ ['history','Adoption History','shelter.history.index','shelter.history.*'], ['notifications','Notifications','shelter.notifications.index','shelter.notifications.*'],
+ ['profile','Shelter Profile','profile.edit','profile.*']
+] as [$icon,$label,$route,$active])
+<a href="{{ route($route) }}" class="{{ request()->routeIs($active)?'active':'' }}" @if(request()->routeIs($active)) aria-current="page" @endif>@include('shelter.partials.icon',['name'=>$icon])<span>{{ $label }}</span></a>
+@endforeach
+</nav>
+<div class="sh-sidebar-bottom"><div class="sh-silhouette" aria-hidden="true"><svg viewBox="0 0 200 118" fill="currentColor"><path d="M20 99C-5 99 3 73 14 69c-8 13-9 22 6 21 1-31 17-42 33-56L68 13c7-7 15-5 18 4l16 4-4 14-15 5-5 26 10 35 9 4v6H64l-3-27-11 27H21z"/><path d="M113 110c-6-4-8-11-5-22l5-22 1-23 11 9 12-2 11-9 2 25c13 7 19 25 14 35 22 2 28-13 19-22 19 8 11 31-12 33h-37l-5-21-5 21z"/></svg></div><p>More Happy Tails<br>Brighter Tomorrows ♥</p><form action="{{ route('logout') }}" method="POST">@csrf<button type="submit">@include('shelter.partials.icon',['name'=>'logout']) Logout</button></form></div>
+</aside><button id="shelterOverlay" class="sh-overlay" aria-label="Close navigation" type="button" onclick="toggleShelterSidebar()"></button>
