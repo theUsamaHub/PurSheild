@@ -4,46 +4,59 @@ namespace App\Http\Controllers\Vet;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\User;
+use App\Models\VetAvailability;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AppointmentController extends Controller
 {
     public function index(Request $request): View
     {
+        $filters = $request->validate([
+            'search' => ['nullable', 'string', 'max:200'],
+            'date' => ['nullable', 'date_format:Y-m-d'],
+            'status' => ['nullable', 'in:pending,approved,rescheduled,completed,cancelled,rejected'],
+            'period' => ['nullable', 'in:week,today,month,upcoming,all'],
+        ]);
+        $period = $filters['period'] ?? 'week';
         $query = Appointment::where('vet_id', Auth::id())
-            ->with(['pet.species', 'pet.breed', 'owner']);
+            ->with(['pet.species', 'pet.breed', 'pet.images', 'owner'])
+            ->withExists('treatment');
 
-        if ($status = $request->input('status')) {
+        if ($status = $filters['status'] ?? null) {
             $query->where('status', $status);
         }
-
-        if ($search = $request->input('search')) {
+        $search = trim($filters['search'] ?? '');
+        if ($search !== '') {
             $query->where(function ($q) use ($search) {
-                $q->whereHas('pet', fn($q) => $q->where('name', 'like', "%{$search}%"))
-                  ->orWhereHas('owner', fn($q) => $q->where('name', 'like', "%{$search}%"));
+                $q->where('reason', 'like', "%{$search}%")
+                    ->orWhereHas('pet', fn ($q) => $q->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('owner', fn ($q) => $q->where('name', 'like', "%{$search}%"));
             });
         }
-
-        if ($date = $request->input('date')) {
+        // An exact date takes precedence over the broader period filter.
+        if ($date = $filters['date'] ?? null) {
             $query->whereDate('appointment_date', $date);
+            $period = 'all';
+        } else {
+            match ($period) {
+                'today' => $query->whereDate('appointment_date', today()),
+                'week' => $query->whereDate('appointment_date', '>=', now()->startOfWeek(Carbon::MONDAY))->whereDate('appointment_date', '<=', now()->endOfWeek(Carbon::SUNDAY)),
+                'month' => $query->whereDate('appointment_date', '>=', now()->startOfMonth())->whereDate('appointment_date', '<=', now()->endOfMonth()),
+                'upcoming' => $query->whereDate('appointment_date', '>=', today()),
+                default => null,
+            };
         }
+        $appointments = $query->orderBy('appointment_date')->orderBy('appointment_time')->orderBy('id')
+            ->paginate(8)->withQueryString();
 
-        $appointments = $query->latest('appointment_date')
-            ->latest('appointment_time')
-            ->paginate(15);
-
-        $stats = [
-            'total' => Appointment::where('vet_id', Auth::id())->count(),
-            'pending' => Appointment::where('vet_id', Auth::id())->where('status', 'pending')->count(),
-            'approved' => Appointment::where('vet_id', Auth::id())->where('status', 'approved')->count(),
-            'completed' => Appointment::where('vet_id', Auth::id())->where('status', 'completed')->count(),
-            'cancelled' => Appointment::where('vet_id', Auth::id())->where('status', 'cancelled')->count(),
-        ];
-
-        return view('vet.appointments.index', compact('appointments', 'stats'));
+        return view('vet.appointments.index', compact('appointments', 'period'));
     }
 
     public function show(Appointment $appointment): View
@@ -51,7 +64,7 @@ class AppointmentController extends Controller
         abort_unless($appointment->vet_id === Auth::id(), 403);
 
         $appointment->load([
-            'pet.species', 'pet.breed', 'pet.healthRecords',
+            'pet.species', 'pet.breed', 'pet.images', 'pet.healthRecords',
             'pet.vaccinations', 'pet.medicalDocuments', 'owner',
             'treatment.prescriptions',
         ]);
@@ -100,11 +113,11 @@ class AppointmentController extends Controller
 
         $newStatus = $validated['status'];
 
-        if (!in_array($appointment->status, ['approved'])) {
-            return back()->with('error', 'Only approved appointments can have their status updated.');
+        if (! in_array($appointment->status, ['approved', 'rescheduled'])) {
+            return back()->with('error', 'Only approved or rescheduled appointments can have their status updated.');
         }
 
-        if ($newStatus === 'completed' && !$appointment->treatment) {
+        if ($newStatus === 'completed' && ! $appointment->treatment) {
             return back()->with('error', 'Please record a treatment before marking as completed.');
         }
 
@@ -113,5 +126,51 @@ class AppointmentController extends Controller
         $label = $newStatus === 'completed' ? 'completed' : 'cancelled';
 
         return back()->with('success', "Appointment marked as {$label}.");
+    }
+
+    public function reschedule(Request $request, Appointment $appointment): RedirectResponse
+    {
+        abort_unless((int) $appointment->vet_id === (int) Auth::id(), 403);
+        $validated = $request->validate([
+            'appointment_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
+            'appointment_time' => ['required', 'date_format:H:i'],
+        ]);
+        $when = Carbon::parse($validated['appointment_date'].' '.$validated['appointment_time']);
+        if ($when->isPast()) {
+            throw ValidationException::withMessages(['appointment_time' => 'Please choose a future appointment time.']);
+        }
+
+        DB::transaction(function () use ($appointment, $validated, $when) {
+            // Serialize rescheduling requests for this vet, including different appointments.
+            User::whereKey(Auth::id())->lockForUpdate()->firstOrFail();
+            $appointment = Appointment::whereKey($appointment->id)->lockForUpdate()->firstOrFail();
+            if (! in_array($appointment->status, ['pending', 'approved', 'rescheduled']) || $appointment->treatment()->exists()) {
+                throw ValidationException::withMessages(['appointment_date' => 'Only active appointments without a treatment can be rescheduled.']);
+            }
+            $time = $when->format('H:i:s');
+            $slots = VetAvailability::where('vet_id', Auth::id())
+                ->where('day_of_week', strtolower($when->format('l')))->get();
+            $contains = fn ($slot) => $slot->start_time && $slot->end_time
+                && $slot->start_time <= $time && $slot->end_time > $time;
+            if (! $slots->where('is_available', true)->contains($contains)
+                || $slots->where('is_available', false)->contains($contains)) {
+                throw ValidationException::withMessages(['appointment_time' => 'Choose a time within your available weekly slots.']);
+            }
+            $conflict = Appointment::where('vet_id', Auth::id())
+                ->whereKeyNot($appointment->id)
+                ->whereDate('appointment_date', $validated['appointment_date'])
+                ->whereTime('appointment_time', $time)
+                ->whereIn('status', ['pending', 'approved', 'rescheduled'])->exists();
+            if ($conflict) {
+                throw ValidationException::withMessages(['appointment_time' => 'This time is already booked. Please choose another time.']);
+            }
+            $appointment->update([
+                'appointment_date' => $validated['appointment_date'],
+                'appointment_time' => $time,
+                'status' => 'rescheduled',
+            ]);
+        });
+
+        return back()->with('success', 'Appointment rescheduled successfully.');
     }
 }

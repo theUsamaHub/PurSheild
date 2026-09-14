@@ -7,6 +7,10 @@
     <title>{{ config('app.name', 'PawCare') }} - {{ __('Veterinarian') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     @vite(['resources/css/app.scss', 'resources/js/app.js'])
     <style>
         [x-cloak] { display: none !important; }
@@ -158,7 +162,7 @@
     <div class="d-flex pc-shell">
         @include('layouts.vet.sidebar')
 
-        <div class="flex-grow-1 pc-main">
+        <div class="flex-grow-1 pc-main @yield('main-class')">
             <header class="pc-topbar">
                 <button class="pc-sidebar-toggle d-lg-none" type="button" onclick="toggleSidebar()">
                     <i class="bi bi-list"></i>

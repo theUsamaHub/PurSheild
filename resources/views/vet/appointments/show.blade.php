@@ -1,7 +1,9 @@
 @extends('layouts.vet.app')
+@section('main-class', 'vet-schedule')
+@include('vet.partials.schedule-styles')
 
 @section('content')
-<div class="fade-in">
+<div class="vs-detail">
     <div class="mb-4">
         <a href="{{ route('vet.appointments.index') }}" class="text-decoration-none text-muted" style="font-size:0.85rem;">
             <i class="bi bi-arrow-left me-1"></i>{{ __('Back to Appointments') }}
@@ -14,9 +16,7 @@
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h6 class="mb-0 fw-semibold">{{ __('Appointment Details') }}</h6>
-                    <span class="badge bg-{{ $appointment->status === 'pending' ? 'warning text-dark' : ($appointment->status === 'approved' ? 'success' : ($appointment->status === 'completed' ? 'info' : 'secondary')) }} fs-6">
-                        {{ ucfirst($appointment->status) }}
-                    </span>
+                    <span class="vs-status vs-status-{{ $appointment->status }}">{{ __(ucfirst($appointment->status)) }}</span>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
@@ -32,7 +32,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="text-muted" style="font-size:0.8rem;">{{ __('Date & Time') }}</label>
-                            <div class="fw-semibold">{{ $appointment->appointment_date->format('l, M d, Y') }} at {{ $appointment->appointment_time }}</div>
+                            <div class="fw-semibold">{{ $appointment->appointment_date->format('l, M d, Y') }} at {{ \Carbon\Carbon::parse($appointment->appointment_time)->format('g:i A') }}</div>
                         </div>
                         <div class="col-md-6">
                             <label class="text-muted" style="font-size:0.8rem;">{{ __('Reason') }}</label>
@@ -49,7 +49,7 @@
             </div>
 
             {{-- Status Actions --}}
-            @if(in_array($appointment->status, ['pending', 'approved']))
+            @if(in_array($appointment->status, ['pending', 'approved', 'rescheduled']))
                 <div class="card mb-4 border-0" style="border-left:4px solid {{ $appointment->status === 'pending' ? 'var(--fs-warning)' : 'var(--fs-success)' }};">
                     <div class="card-header bg-transparent">
                         <h6 class="mb-0 fw-semibold"><i class="bi bi-arrow-repeat me-2"></i>{{ __('Update Status') }}</h6>
@@ -73,7 +73,7 @@
                             </div>
                         @endif
 
-                        @if($appointment->status === 'approved')
+                        @if(in_array($appointment->status, ['approved', 'rescheduled']))
                             <p class="text-muted mb-3" style="font-size:0.85rem;">{{ __('This appointment is approved. Choose the next action:') }}</p>
                             <div class="d-flex flex-wrap gap-2">
                                 @if(!$hasTreatment)
@@ -186,13 +186,9 @@
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-3">
-                        @if($appointment->pet->profile_image)
-                            <img src="{{ asset('uploads/pets/' . $appointment->pet->profile_image) }}" alt="{{ $appointment->pet->name }}" class="rounded-circle" style="width:80px;height:80px;object-fit:cover;">
-                        @else
-                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width:80px;height:80px;background:linear-gradient(135deg,#1a6b3c,#2e9e5a);">
-                                <span class="text-white fw-bold fs-4">{{ substr($appointment->pet->name, 0, 1) }}</span>
-                            </div>
-                        @endif
+                        <div class="d-flex justify-content-center mb-2" style="--avatar-size:80px;">
+                            @include('vet.partials.pet-avatar', ['pet' => $appointment->pet])
+                        </div>
                         <h6 class="mt-2 mb-0">{{ $appointment->pet->name }}</h6>
                         <small class="text-muted">{{ $appointment->pet->species?->name ?? '' }} {{ $appointment->pet->breed ? '- ' . $appointment->pet->breed->name : '' }}</small>
                     </div>

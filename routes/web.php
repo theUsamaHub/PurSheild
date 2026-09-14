@@ -95,10 +95,14 @@ Route::middleware(['auth', 'verified', 'role:vet'])->prefix('vet')->name('vet.')
     Route::put('/appointments/{appointment}/approve', [\App\Http\Controllers\Vet\AppointmentController::class, 'approve'])->name('appointments.approve');
     Route::put('/appointments/{appointment}/reject', [\App\Http\Controllers\Vet\AppointmentController::class, 'reject'])->name('appointments.reject');
     Route::put('/appointments/{appointment}/status', [\App\Http\Controllers\Vet\AppointmentController::class, 'updateStatus'])->name('appointments.updateStatus');
+    Route::put('/appointments/{appointment}/reschedule', [\App\Http\Controllers\Vet\AppointmentController::class, 'reschedule'])->name('appointments.reschedule');
 
     // Availability
     Route::get('/availability', [\App\Http\Controllers\Vet\AvailabilityController::class, 'index'])->name('availability.index');
-    Route::put('/availability', [\App\Http\Controllers\Vet\AvailabilityController::class, 'update'])->name('availability.update');
+    Route::post('/availability', [\App\Http\Controllers\Vet\AvailabilityController::class, 'store'])->name('availability.store');
+    Route::put('/availability/{availability}', [\App\Http\Controllers\Vet\AvailabilityController::class, 'update'])->name('availability.update');
+    Route::delete('/availability/{availability}', [\App\Http\Controllers\Vet\AvailabilityController::class, 'destroy'])->name('availability.destroy');
+    Route::post('/availability/copy-week', [\App\Http\Controllers\Vet\AvailabilityController::class, 'copyWeek'])->name('availability.copyWeek');
 
     // Patients
     Route::get('/patients', [\App\Http\Controllers\Vet\PatientController::class, 'index'])->name('patients.index');
