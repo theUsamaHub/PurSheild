@@ -48,6 +48,20 @@
                 </div>
             </div>
 
+            @if(in_array($appointment->status, ['pending', 'approved', 'rescheduled']) && !$hasTreatment)
+                <div class="card mb-4">
+                    <div class="card-header"><h6 class="mb-0 fw-semibold">{{ __('Reschedule Appointment') }}</h6></div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ route('vet.appointments.reschedule', $appointment) }}" class="row g-3">
+                            @csrf @method('PUT')
+                            <div class="col-sm-5"><label class="form-label" for="detailRescheduleDate">{{ __('Date') }}</label><input class="form-control" id="detailRescheduleDate" type="date" name="appointment_date" min="{{ today()->toDateString() }}" value="{{ old('appointment_date', $appointment->appointment_date->format('Y-m-d')) }}" required></div>
+                            <div class="col-sm-4"><label class="form-label" for="detailRescheduleTime">{{ __('Time') }}</label><input class="form-control" id="detailRescheduleTime" type="time" name="appointment_time" value="{{ old('appointment_time', substr($appointment->appointment_time, 0, 5)) }}" required></div>
+                            <div class="col-sm-3 d-flex align-items-end"><button class="btn btn-success" type="submit">{{ __('Reschedule') }}</button></div>
+                            <p class="small text-muted mb-0">{{ __('Choose a future time within your availability.') }} <a href="{{ route('vet.availability.index') }}">{{ __('View schedule') }}</a></p>
+                        </form>
+                    </div>
+                </div>
+            @endif
             {{-- Status Actions --}}
             @if(in_array($appointment->status, ['pending', 'approved', 'rescheduled']))
                 <div class="card mb-4 border-0" style="border-left:4px solid {{ $appointment->status === 'pending' ? 'var(--fs-warning)' : 'var(--fs-success)' }};">
@@ -180,6 +194,7 @@
 
         {{-- Pet Medical History --}}
         <div class="col-lg-4">
+            @include('vet.partials.medical-documents', ['pet' => $appointment->pet])
             <div class="card mb-4">
                 <div class="card-header">
                     <h6 class="mb-0 fw-semibold"><i class="bi bi-heart-pulse me-2"></i>{{ __('Pet Info') }}</h6>

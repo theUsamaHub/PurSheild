@@ -8,6 +8,7 @@
         </a>
     </div>
 
+    <a class="btn btn-sm btn-outline-success mb-3" href="{{ route('vet.appointments.show', $treatment->appointment) }}">{{ __('View appointment') }}</a>
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="card">
@@ -104,13 +105,7 @@
                     <h6 class="mb-0 fw-semibold">{{ __('Patient') }}</h6>
                 </div>
                 <div class="card-body text-center">
-                    @if($treatment->appointment->pet->profile_image)
-                        <img src="{{ asset('uploads/pets/' . $treatment->appointment->pet->profile_image) }}" class="rounded-circle mb-2" style="width:60px;height:60px;object-fit:cover;">
-                    @else
-                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:60px;height:60px;background:linear-gradient(135deg,#1a6b3c,#2e9e5a);">
-                            <span class="text-white fw-bold fs-5">{{ substr($treatment->appointment->pet->name, 0, 1) }}</span>
-                        </div>
-                    @endif
+                    @include('vet.partials.pet-avatar', ['pet' => $treatment->appointment->pet])
                     <div class="fw-semibold">{{ $treatment->appointment->pet->name }}</div>
                     <small class="text-muted">{{ $treatment->appointment->pet->species?->name ?? '' }}</small>
                     <hr>

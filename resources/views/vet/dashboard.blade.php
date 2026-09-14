@@ -34,11 +34,11 @@
                     <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:var(--pc-success-bg);">
                         <i class="bi bi-calendar-check fs-5" style="color:var(--pc-success);"></i>
                     </div>
-                    <a href="{{ route('vet.appointments.index', ['filter' => 'today']) }}" class="text-muted"><i class="bi bi-chevron-right"></i></a>
+                    <a href="{{ route('vet.appointments.index', ['period' => 'today']) }}" class="text-muted"><i class="bi bi-chevron-right"></i></a>
                 </div>
                 <div class="fw-bold fs-3 mt-3">{{ $todayAppointments->count() }}</div>
                 <div class="text-muted mb-1" style="font-size:.85rem;">{{ __("Today's Appointments") }}</div>
-                <a href="{{ route('vet.appointments.index', ['filter' => 'today']) }}" class="text-decoration-none fw-semibold" style="font-size:.8rem;color:var(--pc-success);">{{ __('View all') }} <i class="bi bi-arrow-right"></i></a>
+                <a href="{{ route('vet.appointments.index', ['period' => 'today']) }}" class="text-decoration-none fw-semibold" style="font-size:.8rem;color:var(--pc-success);">{{ __('View all') }} <i class="bi bi-arrow-right"></i></a>
             </div>
         </div>
         <div class="col-6 col-xl-3">
@@ -60,11 +60,11 @@
                     <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:var(--pc-info-bg);">
                         <i class="bi bi-calendar3 fs-5" style="color:var(--pc-info);"></i>
                     </div>
-                    <a href="{{ route('vet.appointments.index', ['filter' => 'upcoming']) }}" class="text-muted"><i class="bi bi-chevron-right"></i></a>
+                    <a href="{{ route('vet.appointments.index', ['period' => 'upcoming']) }}" class="text-muted"><i class="bi bi-chevron-right"></i></a>
                 </div>
-                <div class="fw-bold fs-3 mt-3">{{ $upcomingAppointments->count() }}</div>
+                <div class="fw-bold fs-3 mt-3">{{ $upcomingCount }}</div>
                 <div class="text-muted mb-1" style="font-size:.85rem;">{{ __('Upcoming Appointments') }}</div>
-                <a href="{{ route('vet.appointments.index', ['filter' => 'upcoming']) }}" class="text-decoration-none fw-semibold" style="font-size:.8rem;color:var(--pc-info);">{{ __('View all') }} <i class="bi bi-arrow-right"></i></a>
+                <a href="{{ route('vet.appointments.index', ['period' => 'upcoming']) }}" class="text-decoration-none fw-semibold" style="font-size:.8rem;color:var(--pc-info);">{{ __('View all') }} <i class="bi bi-arrow-right"></i></a>
             </div>
         </div>
         <div class="col-6 col-xl-3">
@@ -88,7 +88,7 @@
             <div class="pc-card">
                 <div class="pc-card-header d-flex justify-content-between align-items-center">
                     <h6 class="mb-0 fw-bold"><i class="bi bi-calendar-check me-2" style="color:var(--pc-success);"></i>{{ __("Today's Appointments") }}</h6>
-                    <a href="{{ route('vet.appointments.index', ['filter' => 'today']) }}" class="btn btn-sm" style="background:var(--pc-success-bg);color:var(--pc-success);border-radius:.6rem;">
+                    <a href="{{ route('vet.appointments.index', ['period' => 'today']) }}" class="btn btn-sm" style="background:var(--pc-success-bg);color:var(--pc-success);border-radius:.6rem;">
                         {{ __('View All') }} <i class="bi bi-chevron-right"></i>
                     </a>
                 </div>
@@ -109,7 +109,7 @@
                                 <tbody>
                                     @foreach($todayAppointments as $apt)
                                         <tr>
-                                            <td class="ps-3 fw-semibold" style="font-size:.85rem;">{{ $apt->appointment_time }}</td>
+                                            <td class="ps-3 fw-semibold" style="font-size:.85rem;">{{ \Carbon\Carbon::parse($apt->appointment_time)->format('g:i A') }}</td>
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;background:var(--pc-info-bg);color:var(--pc-info);font-weight:600;font-size:.8rem;">
@@ -163,12 +163,12 @@
             <div class="pc-card mb-4">
                 <div class="pc-card-header d-flex justify-content-between align-items-center">
                     <h6 class="mb-0 fw-bold"><i class="bi bi-bell me-2" style="color:var(--pc-purple);"></i>{{ __('Recent Notifications') }}</h6>
-                    <a href="{{ route('vet.notifications.index') ?? '#' }}" class="text-decoration-none fw-semibold" style="font-size:.8rem;color:var(--pc-success);">{{ __('View All') }} <i class="bi bi-chevron-right"></i></a>
+                    <a href="{{ route('vet.notifications.index') }}" class="text-decoration-none fw-semibold" style="font-size:.8rem;color:var(--pc-success);">{{ __('View All') }} <i class="bi bi-chevron-right"></i></a>
                 </div>
                 <div class="card-body p-0">
                     @forelse(($recentNotifications ?? collect()) as $notification)
                         @php
-                            $data = $notification->data ?? [];
+                            $data = ['title' => $notification->title, 'message' => $notification->message, 'type' => $notification->type];
                             $ntype = $data['type'] ?? 'default';
                             $iconMap = [
                                 'request'   => ['bi-calendar-plus', 'var(--pc-purple)', 'var(--pc-purple-bg)'],

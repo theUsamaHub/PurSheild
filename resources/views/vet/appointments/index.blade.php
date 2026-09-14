@@ -3,13 +3,12 @@
 @include('vet.partials.schedule-styles')
 @section('content')
 <div class="vs-heading"><div><h1>{{ __('My Appointments') }}</h1><p>{{ __('Manage, track and review all your booked appointments.') }}</p></div></div>
-@if($errors->any())<div class="alert alert-danger" role="alert">{{ $errors->first() }}</div>@endif
 <form method="GET" action="{{ route('vet.appointments.index') }}" class="vs-filters" id="appointmentFilters" role="search">
     <div class="vs-field"><i class="bi bi-search" aria-hidden="true"></i><label class="visually-hidden" for="appointmentSearch">{{ __('Search by pet, owner or reason') }}</label><input id="appointmentSearch" type="search" name="search" placeholder="{{ __('Search by pet, owner or reason...') }}" value="{{ request('search') }}" maxlength="200"><button class="visually-hidden" type="submit">{{ __('Search') }}</button></div>
     <div class="vs-field"><i class="bi bi-calendar4" aria-hidden="true"></i><label class="visually-hidden" for="appointmentDate">{{ __('Select date') }}</label><input id="appointmentDate" class="{{ request('date') ? '' : 'vs-date-empty' }}" type="date" name="date" value="{{ request('date') }}" aria-label="{{ __('Select date') }}">@unless(request('date'))<span class="vs-date-placeholder">{{ __('Select date') }}</span>@endunless</div>
     <div><label class="visually-hidden" for="appointmentStatus">{{ __('Status') }}</label><select class="form-select" id="appointmentStatus" name="status"><option value="">{{ __('All Statuses') }}</option>@foreach(['pending','approved','rescheduled','completed','cancelled','rejected'] as $status)<option value="{{ $status }}" @selected(request('status') === $status)>{{ __(ucfirst($status)) }}</option>@endforeach</select></div>
     <div><label class="visually-hidden" for="appointmentPeriod">{{ __('Date range') }}</label><select class="form-select" name="period" id="appointmentPeriod">@foreach(['week'=>'This Week','today'=>'Today','month'=>'This Month','upcoming'=>'Upcoming','all'=>'All Dates'] as $value=>$label)<option value="{{ $value }}" @selected($period === $value)>{{ __($label) }}</option>@endforeach</select></div>
-    <a class="vs-button" href="{{ route('vet.appointments.index') }}"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>{{ __('Reset') }}</a>
+    <div class="d-flex gap-2"><button class="vs-button vs-button-primary" type="submit">{{ __('Apply') }}</button><a class="vs-button" href="{{ route('vet.appointments.index') }}"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>{{ __('Reset') }}</a></div>
 </form>
 <section class="vs-panel" aria-labelledby="appointmentsTitle">
     <div class="vs-panel-heading">
@@ -69,6 +68,9 @@
 @push('scripts')
 <script>
 const filters = document.getElementById('appointmentFilters');
+filters.addEventListener('submit', () => {
+    if (document.getElementById('appointmentDate').value) document.getElementById('appointmentPeriod').value = 'all';
+});
 filters.querySelectorAll('select,input[type=date]').forEach(input => input.addEventListener('change', () => {
     if (input.name === 'date' && input.value) document.getElementById('appointmentPeriod').value = 'all';
     if (input.name === 'period') document.getElementById('appointmentDate').value = '';

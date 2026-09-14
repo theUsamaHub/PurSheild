@@ -9,7 +9,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('categories', function (Blueprint $table) {
-            $table->dropColumn(['published_at', 'unpublish_at']);
+            try {
+                $table->dropIndex(['is_active', 'published_at']);
+            } catch (\Throwable $e) {}
+            try {
+                $table->dropIndex(['is_active', 'unpublish_at']);
+            } catch (\Throwable $e) {}
+            try {
+                $table->dropIndex(['published_at']);
+            } catch (\Throwable $e) {}
+            try {
+                $table->dropIndex(['unpublish_at']);
+            } catch (\Throwable $e) {}
+            if (Schema::hasColumn('categories', 'published_at')) {
+                $table->dropColumn(['published_at', 'unpublish_at']);
+            }
         });
     }
 

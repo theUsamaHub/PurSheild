@@ -45,13 +45,14 @@
                             <div class="col-md-6">
                                 <label for="follow_up_date" class="form-label">{{ __('Follow-up Date') }}</label>
                                 <input type="date" class="form-control @error('follow_up_date') is-invalid @enderror" id="follow_up_date" name="follow_up_date"
-                                       value="{{ old('follow_up_date') }}" min="{{ now()->addDay()->toDateString() }}">
+                                       value="{{ old('follow_up_date') }}" min="{{ now()->toDateString() }}">
                                 @error('follow_up_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                             <div class="col-md-6">
                                 <label for="notes" class="form-label">{{ __('Additional Notes') }}</label>
-                                <input type="text" class="form-control @error('notes') is-invalid @enderror" id="notes" name="notes"
-                                       value="{{ old('notes') }}" placeholder="{{ __('Any additional notes...') }}">
+                                <textarea class="form-control @error('notes') is-invalid @enderror" id="notes" name="notes"
+                                          rows="2" maxlength="2000"
+                                          placeholder="{{ __('Any additional notes or observations...') }}">{{ old('notes') }}</textarea>
                                 @error('notes') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
                         </div>
@@ -59,44 +60,12 @@
                         <hr>
 
                         <h6 class="fw-semibold mb-3">
-                            <i class="bi bi-capsule me-2"></i>{{ __('Prescriptions') }}
+                            <i class="bi bi-capsule me-2"></i>{{ __('Prescriptions') }} <small class="text-muted fw-normal">({{ __('Optional') }})</small>
                             <button type="button" class="btn btn-sm btn-outline-success ms-2" onclick="addPrescription()">
-                                <i class="bi bi-plus"></i> {{ __('Add') }}
+                                <i class="bi bi-plus"></i> {{ __('Add Prescription') }}
                             </button>
                         </h6>
-                        <div id="prescriptions-container">
-                            <div class="prescription-entry card mb-3" data-index="0">
-                                <div class="card-body">
-                                    <div class="row g-3">
-                                        <div class="col-md-4">
-                                            <label class="form-label" style="font-size:0.8rem;">{{ __('Medicine Name') }} <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control form-control-sm" name="prescriptions[0][medicine_name]" required placeholder="{{ __('e.g. Amoxicillin') }}">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label" style="font-size:0.8rem;">{{ __('Dosage') }} <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control form-control-sm" name="prescriptions[0][dosage]" required placeholder="{{ __('e.g. 250mg') }}">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label" style="font-size:0.8rem;">{{ __('Frequency') }} <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control form-control-sm" name="prescriptions[0][frequency]" required placeholder="{{ __('e.g. Twice daily') }}">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label" style="font-size:0.8rem;">{{ __('Duration') }} <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control form-control-sm" name="prescriptions[0][duration]" required placeholder="{{ __('e.g. 7 days') }}">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label" style="font-size:0.8rem;">{{ __('Instructions') }}</label>
-                                            <input type="text" class="form-control form-control-sm" name="prescriptions[0][instructions]" placeholder="{{ __('e.g. Take with food') }}">
-                                        </div>
-                                        <div class="col-md-2 d-flex align-items-end">
-                                            <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removePrescription(this)" style="display:none;" id="removeBtn_0">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <div id="prescriptions-container"></div>
 
                         <div class="d-flex gap-2 mt-4">
                             <button type="submit" class="btn btn-primary">
@@ -117,13 +86,7 @@
                 </div>
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
-                        @if($appointment->pet->profile_image)
-                            <img src="{{ asset('uploads/pets/' . $appointment->pet->profile_image) }}" alt="{{ $appointment->pet->name }}" class="rounded-circle" style="width:50px;height:50px;object-fit:cover;">
-                        @else
-                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:50px;height:50px;background:linear-gradient(135deg,#1a6b3c,#2e9e5a);">
-                                <span class="text-white fw-semibold">{{ substr($appointment->pet->name, 0, 1) }}</span>
-                            </div>
-                        @endif
+                        @include('vet.partials.pet-avatar', ['pet' => $appointment->pet])
                         <div class="ms-3">
                             <div class="fw-semibold">{{ $appointment->pet->name }}</div>
                             <small class="text-muted">{{ $appointment->pet->species?->name ?? '' }}</small>
@@ -159,7 +122,7 @@
 <script>
 let prescriptionIndex = 1;
 
-function addPrescription() {
+function addPrescription(values = {}) {
     const container = document.getElementById('prescriptions-container');
     const html = `
         <div class="prescription-entry card mb-3" data-index="${prescriptionIndex}">
@@ -195,12 +158,18 @@ function addPrescription() {
         </div>
     `;
     container.insertAdjacentHTML('beforeend', html);
+    const entry = container.lastElementChild;
+    Object.entries(values).forEach(([field, value]) => {
+        const input = entry.querySelector(`[name="prescriptions[${prescriptionIndex}][${field}]"]`);
+        if (input) input.value = value ?? '';
+    });
     prescriptionIndex++;
 }
 
 function removePrescription(btn) {
     btn.closest('.prescription-entry').remove();
 }
+Object.values(@json(old('prescriptions', []))).forEach(values => addPrescription(values));
 </script>
 @endpush
 @endsection

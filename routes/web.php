@@ -107,6 +107,7 @@ Route::middleware(['auth', 'verified', 'role:vet'])->prefix('vet')->name('vet.')
     // Patients
     Route::get('/patients', [\App\Http\Controllers\Vet\PatientController::class, 'index'])->name('patients.index');
     Route::get('/patients/{pet}', [\App\Http\Controllers\Vet\PatientController::class, 'show'])->name('patients.show');
+    Route::get('/patients/{pet}/documents/{document}', [\App\Http\Controllers\Vet\PatientController::class, 'document'])->name('patients.document');
 
     // Treatments
     Route::get('/treatments', [\App\Http\Controllers\Vet\TreatmentController::class, 'index'])->name('treatments.index');
@@ -116,10 +117,13 @@ Route::middleware(['auth', 'verified', 'role:vet'])->prefix('vet')->name('vet.')
 
     // Reviews
     Route::get('/reviews', [\App\Http\Controllers\Vet\ReviewController::class, 'index'])->name('reviews.index');
+    Route::post('/reviews/{review}/reply', [\App\Http\Controllers\Vet\ReviewController::class, 'reply'])->name('reviews.reply');
 
     // Notifications
      Route::get('/notifications', [\App\Http\Controllers\Vet\NotificationController::class, 'index'])
     ->name('notifications.index');
+    Route::patch('/notifications/read-all', [\App\Http\Controllers\Vet\NotificationController::class, 'markAllRead'])->name('notifications.readAll');
+    Route::patch('/notifications/{source}/{notification}/read', [\App\Http\Controllers\Vet\NotificationController::class, 'markRead'])->whereIn('source', ['practice', 'system'])->name('notifications.read');
 });
 
 // ─── Animal Shelter Routes ──────────────────────────────

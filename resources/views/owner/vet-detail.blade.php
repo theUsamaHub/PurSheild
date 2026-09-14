@@ -121,6 +121,12 @@
                                 @if ($review->comment)
                                     <p class="mb-0" style="font-size:0.875rem;">{{ $review->comment }}</p>
                                 @endif
+                                @if($review->reply)
+                                    <div class="bg-light border-start border-success p-3 mt-2">
+                                        <strong class="small">{{ $vet->name }} &middot; {{ __('Veterinarian response') }}</strong>
+                                        <p class="mb-0 small">{{ $review->reply }}</p>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     @empty

@@ -9,11 +9,12 @@ class Review extends Model
 {
     protected $fillable = [
         'user_id', 'reviewable_type', 'reviewable_id',
-        'rating', 'comment',
+        'rating', 'comment', 'reply', 'replied_at', 'status',
     ];
 
     protected $casts = [
-        'rating' => 'integer',
+        'rating'     => 'integer',
+        'replied_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

@@ -13,13 +13,7 @@
             {{-- Pet Info Card --}}
             <div class="card mb-4">
                 <div class="card-body text-center">
-                    @if($pet->profile_image)
-                        <img src="{{ asset('uploads/pets/' . $pet->profile_image) }}" alt="{{ $pet->name }}" class="rounded-circle mb-3" style="width:100px;height:100px;object-fit:cover;">
-                    @else
-                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:100px;height:100px;background:linear-gradient(135deg,#1a6b3c,#2e9e5a);">
-                            <span class="text-white fw-bold fs-2">{{ substr($pet->name, 0, 1) }}</span>
-                        </div>
-                    @endif
+                    @include('vet.partials.pet-avatar', ['pet' => $pet])
                     <h5 class="fw-bold mb-1">{{ $pet->name }}</h5>
                     <p class="text-muted mb-3" style="font-size:0.85rem;">{{ $pet->species?->name ?? '' }} {{ $pet->breed ? '- ' . $pet->breed->name : '' }}</p>
 
@@ -117,6 +111,10 @@
                                     </span>
                                 </div>
 
+                                <div class="d-flex gap-2 mb-2">
+                                    <a class="btn btn-sm btn-outline-success" href="{{ route('vet.appointments.show', $apt) }}">{{ __('View appointment') }}</a>
+                                    @if($apt->treatment)<a class="btn btn-sm btn-outline-primary" href="{{ route('vet.treatments.show', $apt->treatment) }}">{{ __('View treatment') }}</a>@endif
+                                </div>
                                 @if($apt->treatment)
                                     <div class="ms-3 p-3 rounded bg-light mt-2">
                                         <div class="row g-2">
@@ -155,6 +153,7 @@
                 </div>
             </div>
 
+            @include('vet.partials.medical-documents', ['pet' => $pet])
             {{-- Health Records --}}
             <div class="card mb-4">
                 <div class="card-header">

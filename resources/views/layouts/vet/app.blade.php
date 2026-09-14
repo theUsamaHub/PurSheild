@@ -50,12 +50,13 @@
 
         /* ---------- Layout shell ---------- */
         .pc-shell{ min-height:100vh; }
-        .pc-main{ min-height:100vh; display:flex; flex-direction:column; }
+        .pc-main{ min-width:0; min-height:100vh; display:flex; flex-direction:column; }
         .pc-content{ padding:1.75rem; }
 
         /* ---------- Sidebar ---------- */
         .pc-sidebar{
             width:280px;
+            flex-shrink:0;
             min-height:100vh;
             background:linear-gradient(180deg, var(--pc-sidebar-from), var(--pc-sidebar-to));
             position:relative;
@@ -149,6 +150,8 @@
         .pc-user-role{ font-size:.75rem; color:var(--pc-text-muted); }
         .pc-sidebar-toggle{ border:none; background:transparent; font-size:1.3rem; color:var(--pc-text-heading); }
 
+        .vs-pet-avatar { width:40px; height:40px; flex-shrink:0; border-radius:50%; object-fit:cover; display:inline-flex; align-items:center; justify-content:center; background:#dcfce7; color:#1a6b3c; font-weight:700; }
+        .vs-pet-avatar[hidden] { display:none; }
         /* ---------- Cards ---------- */
         .pc-card{ background:#fff; border:1px solid var(--pc-border); border-radius:.9rem; }
         .pc-card-header{
@@ -159,23 +162,24 @@
     @stack('styles')
 </head>
 <body>
+    @php($unreadNotificationsCount = \App\Support\VetNotifications::unreadCount(Auth::user()))
     <div class="d-flex pc-shell">
         @include('layouts.vet.sidebar')
 
         <div class="flex-grow-1 pc-main @yield('main-class')">
             <header class="pc-topbar">
-                <button class="pc-sidebar-toggle d-lg-none" type="button" onclick="toggleSidebar()">
+                <button class="pc-sidebar-toggle d-lg-none" type="button" onclick="toggleSidebar()" aria-label="{{ __('Toggle navigation') }}" aria-controls="sidebar" aria-expanded="false">
                     <i class="bi bi-list"></i>
                 </button>
 
-                <form class="pc-search" action="{{ route('vet.dashboard') }}" method="GET" role="search">
+                <form class="pc-search" action="{{ route('vet.appointments.index') }}" method="GET" role="search">
                     <i class="bi bi-search"></i>
-                    <input type="search" name="q" placeholder="{{ __('Search...') }}" value="{{ request('q') }}">
+                    <input type="search" name="search" placeholder="{{ __('Search appointments, pets, owners...') }}" value="{{ request('search') }}">
                     <kbd>Ctrl+K</kbd>
                 </form>
 
                 <div class="pc-topbar-right">
-                    <a href="{{ route('vet.dashboard') }}#notifications" class="pc-bell">
+                    <a href="{{ route('vet.notifications.index') }}" class="pc-bell">
                         <i class="bi bi-bell"></i>
                         @php($unread = $unreadNotificationsCount ?? (Auth::user()->unreadNotifications->count() ?? 0))
                         @if($unread > 0)
@@ -186,8 +190,8 @@
                     <div class="dropdown">
                         <div class="pc-user" data-bs-toggle="dropdown" aria-expanded="false">
                             <div class="pc-user-avatar">
-                                @if(Auth::user()->avatar ?? false)
-                                    <img src="{{ Auth::user()->avatar }}" alt="{{ Auth::user()->name }}" style="width:100%;height:100%;object-fit:cover;">
+                                @if(Auth::user()->profile_image)
+                                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url(Auth::user()->profile_image) }}" alt="{{ Auth::user()->name }}" style="width:100%;height:100%;object-fit:cover;">
                                 @else
                                     {{ substr(Auth::user()->name, 0, 1) }}
                                 @endif
@@ -225,6 +229,9 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 @endif
+                @if($errors->any())
+                    <div class="alert alert-danger" role="alert"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+                @endif
                 @yield('content')
             </main>
         </div>
@@ -234,11 +241,15 @@
     @include('partials.command-palette')
 
     <script>
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && document.getElementById('sidebar')?.classList.contains('pc-sidebar-open')) toggleSidebar();
+        });
         function toggleSidebar(){
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
             if (!sidebar) return;
             const isOpen = sidebar.classList.toggle('pc-sidebar-open');
+            document.querySelector('.pc-sidebar-toggle')?.setAttribute('aria-expanded', String(isOpen));
             if (overlay) overlay.style.display = isOpen ? 'block' : 'none';
         }
     </script>

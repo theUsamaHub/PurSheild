@@ -20,11 +20,12 @@ class AppointmentController extends Controller
     {
         $filters = $request->validate([
             'search' => ['nullable', 'string', 'max:200'],
-            'date' => ['nullable', 'date_format:Y-m-d'],
+            'date'   => ['nullable', 'date_format:Y-m-d'],
             'status' => ['nullable', 'in:pending,approved,rescheduled,completed,cancelled,rejected'],
             'period' => ['nullable', 'in:week,today,month,upcoming,all'],
         ]);
-        $period = $filters['period'] ?? 'week';
+
+        $period = $filters['period'] ?? 'all';
         $query = Appointment::where('vet_id', Auth::id())
             ->with(['pet.species', 'pet.breed', 'pet.images', 'owner'])
             ->withExists('treatment');
@@ -32,29 +33,40 @@ class AppointmentController extends Controller
         if ($status = $filters['status'] ?? null) {
             $query->where('status', $status);
         }
+
         $search = trim($filters['search'] ?? '');
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('reason', 'like', "%{$search}%")
-                    ->orWhereHas('pet', fn ($q) => $q->where('name', 'like', "%{$search}%"))
-                    ->orWhereHas('owner', fn ($q) => $q->where('name', 'like', "%{$search}%"));
+                    ->orWhere('notes', 'like', "%{$search}%")
+                    ->orWhereHas('pet', fn ($pq) => $pq->where('name', 'like', "%{$search}%")
+                        ->orWhereHas('species', fn ($sq) => $sq->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('breed', fn ($bq) => $bq->where('name', 'like', "%{$search}%")))
+                    ->orWhereHas('owner', fn ($oq) => $oq->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%"));
             });
         }
+
         // An exact date takes precedence over the broader period filter.
         if ($date = $filters['date'] ?? null) {
             $query->whereDate('appointment_date', $date);
             $period = 'all';
         } else {
             match ($period) {
-                'today' => $query->whereDate('appointment_date', today()),
-                'week' => $query->whereDate('appointment_date', '>=', now()->startOfWeek(Carbon::MONDAY))->whereDate('appointment_date', '<=', now()->endOfWeek(Carbon::SUNDAY)),
-                'month' => $query->whereDate('appointment_date', '>=', now()->startOfMonth())->whereDate('appointment_date', '<=', now()->endOfMonth()),
-                'upcoming' => $query->whereDate('appointment_date', '>=', today()),
-                default => null,
+                'today'    => $query->whereDate('appointment_date', today()),
+                'week'     => $query->whereDate('appointment_date', '>=', now()->startOfWeek(Carbon::MONDAY))->whereDate('appointment_date', '<=', now()->endOfWeek(Carbon::SUNDAY)),
+                'month'    => $query->whereDate('appointment_date', '>=', now()->startOfMonth())->whereDate('appointment_date', '<=', now()->endOfMonth()),
+                'upcoming' => $query->whereIn('status', ['pending', 'approved', 'rescheduled'])
+                    ->where(function ($q) {
+                        $q->whereDate('appointment_date', '>', today())
+                            ->orWhere(fn ($today) => $today->whereDate('appointment_date', today())->whereTime('appointment_time', '>=', now()->format('H:i:s')));
+                    }),
+                default    => null,
             };
         }
         $appointments = $query->orderBy('appointment_date')->orderBy('appointment_time')->orderBy('id')
-            ->paginate(8)->withQueryString();
+            ->paginate(10)->withQueryString();
 
         return view('vet.appointments.index', compact('appointments', 'period'));
     }
@@ -95,7 +107,7 @@ class AppointmentController extends Controller
             return back()->with('error', 'Only pending appointments can be rejected.');
         }
 
-        $appointment->update(['status' => 'cancelled']);
+        $appointment->update(['status' => 'rejected']);
 
         return back()->with('success', 'Appointment rejected.');
     }

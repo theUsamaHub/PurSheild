@@ -55,7 +55,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('vet.notifications.*') ? 'active' : '' }}" href="{{ route('vet.notifications.index') ?? '#' }}">
+                <a class="nav-link {{ request()->routeIs('vet.notifications.*') ? 'active' : '' }}" href="{{ route('vet.notifications.index') }}">
                     <i class="bi bi-bell"></i> {{ __('Notifications') }}
                     @php($unread = $unreadNotificationsCount ?? (Auth::user()->unreadNotifications->count() ?? 0))
                     @if($unread > 0)
