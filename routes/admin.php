@@ -19,6 +19,16 @@ Route::prefix('admin')
 
         Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
 
+        // Recycle Bin
+        Route::get('/trash', [\App\Http\Controllers\Admin\TrashController::class, 'index'])->name('trash.index');
+        Route::post('/trash/{type}/{id}/restore', [\App\Http\Controllers\Admin\TrashController::class, 'restore'])->name('trash.restore');
+        Route::delete('/trash/{type}/{id}/force-delete', [\App\Http\Controllers\Admin\TrashController::class, 'forceDelete'])->name('trash.force-delete');
+
+        // Orders
+        Route::get('/orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{order}', [\App\Http\Controllers\Admin\OrderController::class, 'show'])->name('orders.show');
+        Route::put('/orders/{order}/status', [\App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+
         Route::get('/categories/trashed', [\App\Http\Controllers\Admin\CategoryController::class, 'trashed'])->name('categories.trashed');
         Route::post('/categories/{id}/restore', [\App\Http\Controllers\Admin\CategoryController::class, 'restore'])->name('categories.restore')->withTrashed();
         Route::delete('/categories/{id}/force-delete', [\App\Http\Controllers\Admin\CategoryController::class, 'forceDelete'])->name('categories.force-delete')->withTrashed();
@@ -45,7 +55,12 @@ Route::prefix('admin')
         Route::resource('tags', \App\Http\Controllers\Admin\TagController::class)->except(['show']);
 
         Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
-        Route::resource('product-categories', \App\Http\Controllers\Admin\ProductCategoryController::class)->except(['show']);
+        Route::post('/products/bulk-action', [\App\Http\Controllers\Admin\ProductController::class, 'bulkAction'])->name('products.bulk-action');
+
+        Route::resource('product-categories', \App\Http\Controllers\Admin\ProductCategoryController::class)->parameters([
+            'product-categories' => 'category',
+        ]);
+        Route::post('/product-categories/bulk-action', [\App\Http\Controllers\Admin\ProductCategoryController::class, 'bulkAction'])->name('product-categories.bulk-action');
 
         Route::resource('species', \App\Http\Controllers\Admin\SpeciesController::class);
         Route::resource('breeds', \App\Http\Controllers\Admin\BreedController::class);
@@ -91,6 +106,10 @@ Route::prefix('admin')
         Route::post('/backup', [\App\Http\Controllers\Admin\BackupController::class, 'create'])->name('backup.create');
         Route::get('/backup/{filename}', [\App\Http\Controllers\Admin\BackupController::class, 'download'])->name('backup.download');
         Route::delete('/backup/{filename}', [\App\Http\Controllers\Admin\BackupController::class, 'destroy'])->name('backup.destroy');
+
+        Route::resource('sku-templates', \App\Http\Controllers\Admin\SkuTemplateController::class)->except(['show'])->parameters([
+            'sku-templates' => 'skuTemplate',
+        ]);
 
         Route::resource('care-content', \App\Http\Controllers\Admin\CareContentController::class);
 

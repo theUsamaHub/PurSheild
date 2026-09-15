@@ -91,6 +91,8 @@ function commandPalette() {
             { name: 'Reviews', url: '{{ route("admin.reviews.index") }}', icon: 'bi bi-star', category: 'Admin' },
             { name: 'Products', url: '{{ route("admin.products.index") }}', icon: 'bi bi-box-seam', category: 'E-Commerce' },
             { name: 'Product Categories', url: '{{ route("admin.product-categories.index") }}', icon: 'bi bi-grid', category: 'E-Commerce' },
+            { name: 'Orders', url: '{{ route("admin.orders.index") }}', icon: 'bi bi-bag', category: 'E-Commerce' },
+            { name: 'SKU Templates', url: '{{ route("admin.sku-templates.index") }}', icon: 'bi bi-upc-scan', category: 'E-Commerce' },
             { name: 'Care Content', url: '{{ route("admin.care-content.index") }}', icon: 'bi bi-journal-richtext', category: 'E-Commerce' },
             { name: 'Species', url: '{{ route("admin.species.index") }}', icon: 'bi bi-bug', category: 'Veterinary' },
             { name: 'Breeds', url: '{{ route("admin.breeds.index") }}', icon: 'bi bi-heart', category: 'Veterinary' },
@@ -103,6 +105,7 @@ function commandPalette() {
             { name: 'Health Dashboard', url: '{{ route("admin.health.index") }}', icon: 'bi bi-heart-pulse', category: 'System' },
             { name: 'Log Viewer', url: '{{ route("admin.logs.index") }}', icon: 'bi bi-journal-text', category: 'System' },
             { name: 'Backups', url: '{{ route("admin.backup.index") }}', icon: 'bi bi-database', category: 'System' },
+            { name: 'Recycle Bin', url: '{{ route("admin.trash.index") }}', icon: 'bi bi-trash', category: 'System' },
             @endif
             @if(auth()->user()->hasRole('owner'))
             { name: 'Owner Dashboard', url: '{{ route("owner.dashboard") }}', icon: 'bi bi-speedometer2', category: 'Owner' },

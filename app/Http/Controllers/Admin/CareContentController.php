@@ -29,7 +29,7 @@ class CareContentController extends Controller
             $query->where('content_type', $contentType);
         }
 
-        $careContents = $query->latest()->paginate(15);
+        $careContents = $query->latest()->paginate(15)->withQueryString();
 
         $counts = CareContent::selectRaw("count(*) as total")
             ->selectRaw("count(case when content_type = 'article' then 1 end) as article_count")
@@ -120,6 +120,6 @@ class CareContentController extends Controller
         $careContent->delete();
 
         return redirect()->route('admin.care-content.index')
-            ->with('success', 'Care content deleted successfully.');
+            ->with('success', 'Care content moved to recycle bin.');
     }
 }
