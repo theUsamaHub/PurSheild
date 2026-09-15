@@ -119,7 +119,7 @@ class ShelterPanelTest extends TestCase
         $this->post($url, ['message' => 'Duplicate'])->assertSessionHas('error');
         $this->assertSame(1, $animal->applications()->count());
         $this->assertDatabaseHas('furshield_notifications', ['user_id' => $this->shelter->id, 'title' => 'New adoption request', 'is_read' => false]);
-        $this->assertSame(1, \App\Models\FurshieldNotification::where('user_id', $this->shelter->id)->count());
+        $this->assertSame(1, FurshieldNotification::where('user_id', $this->shelter->id)->count());
         $reserved = $this->animal(['status' => 'pending']);
         $this->post(route('owner.adoption.apply', $reserved), ['message' => 'A family home'])->assertSessionHas('error');
         $this->assertSame(0, $reserved->applications()->count());
@@ -349,7 +349,41 @@ class ShelterPanelTest extends TestCase
     public function test_completed_care_cannot_be_recorded_at_a_future_time(): void
     {
         $animal = $this->animal();
-        $this->post('/shelter/care-status',['listing_id' => $animal->id, 'type' => 'medical', 'notes' => 'Checkup', 'log_date' => '2026-09-14', 'log_time' => '23:59', 'staff_name' => 'Vet', 'status' => 'completed'])->assertSessionHasErrors('log_time');
-        $this->assertSame(0,CareStatusLog::count());
+        $this->post('/shelter/care-status', ['listing_id' => $animal->id, 'type' => 'medical', 'notes' => 'Checkup', 'log_date' => '2026-09-14', 'log_time' => '23:59', 'staff_name' => 'Vet', 'status' => 'completed'])->assertSessionHasErrors('log_time');
+        $this->assertSame(0, CareStatusLog::count());
+    }
+
+    public function test_shelter_review_reply_is_validated_saved_and_can_be_updated(): void
+    {
+        $animal = $this->animal();
+        $review = Review::create(['user_id' => $this->owner->id, 'reviewable_type' => AdoptionListing::class, 'reviewable_id' => $animal->id, 'rating' => 5, 'comment' => '<script>bad()</script>']);
+        $url = route('shelter.reviews.reply', $review);
+        $this->get('/shelter/reviews')->assertOk()->assertSee('Shelter Reviews')->assertSee('reviewReplyModal')->assertSee(e('<script>bad()</script>'), false)->assertDontSee('<script>bad()</script>', false);
+        $this->post($url, ['reply' => '   '])->assertSessionHasErrors('reply');
+        $this->post($url, ['reply' => str_repeat('a', 2001)])->assertSessionHasErrors('reply');
+        $this->assertNull($review->fresh()->reply);
+        $this->post($url, ['reply' => 'Thank you for giving Bruno a home.'])->assertSessionHas('success');
+        $this->assertSame('resolved', $review->fresh()->status);
+        $this->assertNotNull($review->fresh()->replied_at);
+        $this->post($url, ['reply' => 'Updated response'])->assertSessionHas('success');
+        $this->assertSame('Updated response', $review->fresh()->reply);
+        $this->get('/shelter/reviews?response=replied&search=Updated')->assertViewHas('reviews', fn ($items) => $items->total() === 1);
+        $this->get('/shelter/reviews?response=unanswered')->assertViewHas('reviews', fn ($items) => $items->total() === 0);
+    }
+
+    public function test_reviews_reply_denies_other_shelters_and_vet_reviews_and_preserves_filtered_pagination(): void
+    {
+        $foreign = $this->animal(['shelter_id' => $this->owner->id]);
+        foreach ([[AdoptionListing::class, $foreign->id], [User::class, $this->shelter->id]] as [$type, $id]) {
+            $review = Review::create(['user_id' => $this->owner->id, 'reviewable_type' => $type, 'reviewable_id' => $id, 'rating' => 5, 'comment' => 'Private review']);
+            $this->post(route('shelter.reviews.reply', $review), ['reply' => 'Unauthorized'])->assertForbidden();
+            $this->assertNull($review->fresh()->reply);
+        }
+        $animal = $this->animal();
+        for ($i = 0; $i < 11; $i++) {
+            Review::create(['user_id' => $this->owner->id, 'reviewable_type' => AdoptionListing::class, 'reviewable_id' => $animal->id, 'rating' => 5, 'comment' => 'Our shelter']);
+        }
+        $this->get('/shelter/reviews?response=unanswered&rating=5&sort=latest')->assertOk()->assertViewHas('reviews', fn ($items) => $items->total() === 11 && $items->count() === 10 && str_contains($items->nextPageUrl(), 'response=unanswered'));
+        $this->get('/shelter/reviews?response=wrong')->assertSessionHasErrors('response');
     }
 }
