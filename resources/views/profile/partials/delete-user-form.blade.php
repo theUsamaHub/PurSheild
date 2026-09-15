@@ -1,20 +1,24 @@
 <section>
-    <header>
-        <h5 class="fw-semibold text-danger">{{ __('Delete Account') }}</h5>
-        <p class="text-muted mb-0" style="font-size: 0.875rem;">
-            {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
-        </p>
-    </header>
+    <div class="pc-section-header pc-section-danger">
+        <i class="bi bi-exclamation-triangle"></i>
+        <div>
+            <h6>{{ __('Delete Account') }}</h6>
+            <p>{{ __('Once your account is deleted, all of its resources and data will be permanently deleted.') }}</p>
+        </div>
+    </div>
 
-    <x-danger-button
+    <button
+        type="button"
+        class="pc-btn-danger mt-3"
         x-data=""
         x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
-        class="mt-3"
-    >{{ __('Delete Account') }}</x-danger-button>
+    >
+        <i class="bi bi-trash"></i> {{ __('Delete Account') }}
+    </button>
 
     <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-        <div class="modal-header">
-            <h5 class="modal-title fw-semibold">{{ __('Are you sure you want to delete your account?') }}</h5>
+        <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title fw-bold">{{ __('Are you sure you want to delete your account?') }}</h5>
         </div>
         <div class="modal-body">
             <p class="text-muted" style="font-size: 0.875rem;">
@@ -33,7 +37,7 @@
                 <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-1" />
             </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer border-0 pt-0">
             <x-secondary-button x-on:click="$dispatch('close')">
                 {{ __('Cancel') }}
             </x-secondary-button>

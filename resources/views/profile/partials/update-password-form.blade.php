@@ -1,12 +1,13 @@
 <section>
-    <header>
-        <h5 class="fw-semibold">{{ __('Update Password') }}</h5>
-        <p class="text-muted mb-0" style="font-size: 0.875rem;">
-            {{ __('Ensure your account is using a long, random password to stay secure.') }}
-        </p>
-    </header>
+    <div class="pc-section-header pc-section-security">
+        <i class="bi bi-shield-lock"></i>
+        <div>
+            <h6>{{ __('Update Password') }}</h6>
+            <p>{{ __('Ensure your account is using a long, random password to stay secure.') }}</p>
+        </div>
+    </div>
 
-    <form method="post" action="{{ route('password.update') }}" class="mt-4">
+    <form method="post" action="{{ route('password.update') }}" class="mt-3">
         @csrf
         @method('put')
 
@@ -29,7 +30,9 @@
         </div>
 
         <div class="d-flex align-items-center gap-3">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+            <button type="submit" class="pc-btn-primary">
+                <i class="bi bi-lock"></i> {{ __('Update Password') }}
+            </button>
 
             @if (session('status') === 'password-updated')
                 <span
@@ -37,9 +40,8 @@
                     x-show="show"
                     x-transition
                     x-init="setTimeout(() => show = false, 2000)"
-                    class="text-muted"
-                    style="font-size: 0.875rem;"
-                >{{ __('Saved.') }}</span>
+                    class="pc-saved-msg"
+                ><i class="bi bi-check-circle"></i> {{ __('Saved.') }}</span>
             @endif
         </div>
     </form>
