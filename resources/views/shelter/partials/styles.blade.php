@@ -19,4 +19,16 @@
 @media(min-width:1251px){.sh-animal-stats .sh-stat{min-height:114px;padding:12px 19px;grid-template-columns:70px 1fr}.sh-animal-stats .sh-stat-icon{width:61px;height:61px}.sh-animal-stats .sh-stat small{margin-top:5px}.sh-animal-stats .sh-stat strong{font-size:32px;margin-top:3px}}
 .sh-species{display:inline-flex;align-items:center;gap:14px;white-space:nowrap}.sh-species .sh-icon{color:#8995aa}.sh-overview-note{padding:17px 14px;background:#edfaf4;border-radius:12px;color:#147b57;text-align:center;font-size:13px;width:155px;flex-shrink:0}.sh-overview-note .sh-icon{display:block;margin:0 auto 9px;width:35px;height:35px}.sh-overview-note span{display:block;font-size:21px;margin-top:4px}@media(max-width:1450px){.sh-overview-note{display:none}}
 .sh-nav a>span{white-space:nowrap}.sh-detail summary{cursor:pointer;color:var(--sh-text)}.sh-request-stats{max-width:1055px}.sh-breadcrumb{margin-bottom:10px}
+
+/* Compact type across the shelter panel. */
+.sh-body{font-size:13px}.sh-body .sh-brand strong{font-size:25px}.sh-body .sh-brand small{font-size:13px}
+.sh-body .sh-nav a{font-size:15px;min-height:49px;padding-top:10px;padding-bottom:10px}.sh-sidebar{height:100dvh;overflow-y:auto}.sh-sidebar-bottom{padding-top:22px}
+.sh-body .sh-topbar>strong{font-size:18px}.sh-body .sh-heading h1{font-size:28px;letter-spacing:-.4px}.sh-body .sh-heading p{font-size:14px}.sh-body .sh-heading h1 .sh-icon{width:28px;height:28px;font-size:27px}
+.sh-body .sh-breadcrumb{font-size:13px}.sh-body .sh-card-header h2{font-size:16px}.sh-body .sh-card-header>a{font-size:13px}
+.sh-body .sh-stat strong{font-size:28px}.sh-body .sh-stat-label{font-size:13px}.sh-body .sh-stat small{font-size:12px}.sh-body .sh-stats-compact .sh-stat strong{font-size:23px}
+.sh-body .sh-table,.sh-body .sh-table th{font-size:13px}.sh-body .sh-field input,.sh-body .sh-field select{font-size:13px}
+.sh-body .sh-button-large{font-size:15px;min-height:48px;padding:12px 21px}.sh-body .sh-form-grid label,.sh-body .sh-form-grid input,.sh-body .sh-form-grid select,.sh-body .sh-form-grid textarea{font-size:13px}
+.sh-body .sh-detail-title h2{font-size:15px}.sh-body .sh-detail-hero h3{font-size:20px}.sh-body .sh-quick strong{font-size:14px}.sh-body .sh-quick small{font-size:12px}.sh-body .sh-note{font-size:14px}.sh-body .sh-quote{font-size:18px}
+.sh-body .pc-profile-heading h2{font-size:23px}.sh-body .sh-sidebar-bottom button{font-size:15px}
+@media(max-width:600px){.sh-body .sh-heading h1{font-size:24px}.sh-body .sh-topbar>strong{font-size:15px}.sh-body .sh-heading p{font-size:13px}.sh-body .sh-stat-label{font-size:12px}.sh-body .sh-stat strong{font-size:25px}.sh-body .sh-stats-compact .sh-stat strong{font-size:22px}}
 </style>

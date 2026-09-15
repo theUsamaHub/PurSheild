@@ -5,6 +5,7 @@
  ['dashboard','Dashboard','shelter.dashboard','shelter.dashboard'], ['paw','My Animals','shelter.listings.index','shelter.listings.*'],
  ['care','Care Records','shelter.care-status.index','shelter.care-status.*'], ['requests','Adoption Requests','shelter.applications.index','shelter.applications.*'],
  ['history','Adoption History','shelter.history.index','shelter.history.*'], ['notifications','Notifications','shelter.notifications.index','shelter.notifications.*'],
+ ['star-fill','My Reviews','shelter.reviews.index','shelter.reviews.*'],
  ['profile','Shelter Profile','profile.edit','profile.*']
 ] as [$icon,$label,$route,$active])
 <a href="{{ route($route) }}" class="{{ request()->routeIs($active)?'active':'' }}" @if(request()->routeIs($active)) aria-current="page" @endif>@include('shelter.partials.icon',['name'=>$icon])<span>{{ $label }}</span></a>

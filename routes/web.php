@@ -149,6 +149,7 @@ Route::middleware(['auth', 'verified', 'role:shelter'])->prefix('shelter')->name
 
     // Reviews
     Route::get('/reviews', [\App\Http\Controllers\Shelter\ReviewController::class, 'index'])->name('reviews.index');
+    Route::post('/reviews/{review}/reply', [\App\Http\Controllers\Shelter\ReviewController::class, 'reply'])->name('reviews.reply');
 
     // Care Status
     Route::get('/care-status', [\App\Http\Controllers\Shelter\CareController::class, 'index'])->name('care-status.index');
