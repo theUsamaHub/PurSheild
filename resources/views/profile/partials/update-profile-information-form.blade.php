@@ -28,10 +28,10 @@
                     @if ($user->profile_image)
                         src="{{ asset('storage/' . $user->profile_image) }}"
                     @else
-                        src="data:image/svg+xml;base64,{{ base64_encode('<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'96\' height=\'96\'><rect width=\'96\' height=\'96\' rx=\'48\' fill=\'%231a6b3c\'/><text x=\'48\' y=\'58\' text-anchor=\'middle\' fill=\'white\' font-size=\'36\' font-weight=\'bold\'>' . substr($user->name, 0, 1) . '</text></svg>') }}"
+                        src="data:image/svg+xml;base64,{{ base64_encode('<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'120\'><rect width=\'120\' height=\'120\' rx=\'60\' fill=\'%231a6b3c\'/><text x=\'60\' y=\'72\' text-anchor=\'middle\' fill=\'white\' font-size=\'44\' font-weight=\'bold\'>' . substr($user->name, 0, 1) . '</text></svg>') }}"
                     @endif
                     alt="{{ $user->name }}"
-                    class="rounded-circle" style="width:96px;height:96px;object-fit:cover;">
+                    class="rounded-circle pc-profile-avatar" style="width:120px;height:120px;object-fit:cover;">
             </div>
             <div>
                 <label for="profile_image" class="pc-photo-upload-btn">
