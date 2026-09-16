@@ -1,0 +1,1 @@
+<span class="op-badge {{ $pet->vaccination_due?'op-amber':'op-green' }}"><i class="bi bi-{{ $pet->vaccination_due?'circle-fill':'check-circle-fill' }}"></i>{{ $pet->vaccination_due?'Vaccination Due':'Healthy' }}</span>

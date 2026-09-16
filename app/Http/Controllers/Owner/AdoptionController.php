@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Owner;
 use App\Http\Controllers\Controller;
 use App\Models\AdoptionApplication;
 use App\Models\AdoptionListing;
+use App\Models\Breed;
 use App\Models\FurshieldNotification;
+use App\Models\ShelterProfile;
 use App\Models\Species;
+use App\Support\OwnerDiscovery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,39 +21,51 @@ class AdoptionController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = AdoptionListing::with(['species', 'breed', 'shelter.shelterProfile', 'images'])
-            ->where('status', 'available')
-            ->whereHas('shelter', function ($q) {
-                $q->where('status', 'active');
-            });
-
-        if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('pet_name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            });
+        $f = $request->validate(['search' => ['nullable', 'string', 'max:200'], 'species_id' => ['nullable', 'integer', 'exists:species,id'], 'breed_id' => ['nullable', 'integer', 'exists:breeds,id'], 'gender' => ['nullable', 'in:male,female'], 'health_status' => ['nullable', 'in:healthy,under_treatment,vaccination_due'], 'age' => ['nullable', 'in:baby,young,adult,senior'], 'location' => ['nullable', 'string', 'max:100'], 'favorites' => ['nullable', 'boolean']]);
+        $base = OwnerDiscovery::listings();
+        $counts = (clone $base)->with('species')->selectRaw('species_id,COUNT(*) AS total')->groupBy('species_id')->get();
+        $total = $counts->sum('total');
+        $query = (clone $base)->with(['species', 'breed', 'images', 'shelter.shelterProfile']);
+        $search = trim($f['search'] ?? '');
+        if ($search !== '') {
+            $query->where(fn ($q) => $q->where('pet_name', 'like', "%{$search}%")->orWhere('description', 'like', "%{$search}%")->orWhereHas('breed', fn ($b) => $b->where('name', 'like', "%{$search}%"))->orWhereHas('species', fn ($b) => $b->where('name', 'like', "%{$search}%")));
         }
-
-        if ($speciesId = $request->input('species_id')) {
-            $query->where('species_id', $speciesId);
+        foreach (['species_id', 'breed_id', 'gender'] as $field) {
+            if ($f[$field] ?? null) {
+                $query->where($field, $f[$field]);
+            }
         }
-
-        if ($gender = $request->input('gender')) {
-            $query->where('gender', $gender);
+        if ($f['health_status'] ?? null) {
+            $query->where('health_state', $f['health_status']);
         }
-
-        if ($health = $request->input('health_status')) {
-            $query->where('health_status', $health);
+        if ($f['location'] ?? null) {
+            $query->whereHas('shelter.shelterProfile', fn ($q) => $q->where('city', $f['location']));
         }
+        $favorites = OwnerDiscovery::favorites('pet');
+        if ($f['favorites'] ?? false) {
+            $query->whereIn('id', $favorites);
+        }
+        if ($f['age'] ?? null) {
+            $matching = (clone $query)->get(['id', 'age'])->filter(function ($pet) use ($f) {
+                $m = OwnerDiscovery::ageMonths($pet->age);
 
-        $listings = $query->latest()->paginate(15);
+                return $m !== null && match ($f['age']) {
+                    'baby' => $m < 12,'young' => $m >= 12 && $m < 36,'adult' => $m >= 36 && $m < 84,'senior' => $m >= 84
+                };
+            })->pluck('id');
+            $query->whereIn('id', $matching);
+        }
+        $listings = $query->latest()->orderByDesc('id')->paginate(8)->withQueryString();
         $species = Species::where('status', 'active')->orderBy('name')->get();
+        $breeds = Breed::orderBy('name')->get();
+        $locations = ShelterProfile::whereHas('user', fn ($q) => $q->where('status', 'active'))->whereNotNull('city')->where('city', '!=', '')->distinct()->orderBy('city')->pluck('city');
 
-        return view('owner.adoption.index', compact('listings', 'species'));
+        return view('owner.adoption.index', compact('listings', 'species', 'breeds', 'locations', 'counts', 'total', 'favorites'));
     }
 
     public function show(AdoptionListing $listing): View
     {
+        abort_unless(OwnerDiscovery::listings()->whereKey($listing->id)->exists() || AdoptionApplication::where('listing_id', $listing->id)->where('applicant_id', Auth::id())->exists(), 404);
         $listing->load(['species', 'breed', 'shelter.shelterProfile', 'images', 'reviews.user']);
 
         $hasApplied = AdoptionApplication::where('listing_id', $listing->id)
@@ -65,7 +80,7 @@ class AdoptionController extends Controller
 
     public function apply(Request $request, AdoptionListing $listing): RedirectResponse
     {
-        if ($listing->status !== 'available') {
+        if ($listing->status !== 'available' || ! $listing->shelter || $listing->shelter->status !== 'active') {
             return back()->with('error', 'This listing is no longer available.');
         }
 
@@ -98,7 +113,7 @@ class AdoptionController extends Controller
 
         DB::transaction(function () use ($listing, $validated) {
             $listing = AdoptionListing::whereKey($listing->id)->lockForUpdate()->firstOrFail();
-            if ($listing->status !== 'available' || AdoptionApplication::where('listing_id', $listing->id)->where('applicant_id', Auth::id())->exists()) {
+            if ($listing->status !== 'available' || $listing->shelter?->status !== 'active' || AdoptionApplication::where('listing_id', $listing->id)->where('applicant_id', Auth::id())->exists()) {
                 throw ValidationException::withMessages(['message' => 'This animal is no longer available or you have already applied.']);
             }
             $application = AdoptionApplication::create([

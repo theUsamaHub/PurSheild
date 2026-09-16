@@ -1,0 +1,1 @@
+@if($pet->date_of_birth){{ $pet->date_of_birth->age>=1?$pet->date_of_birth->age.' '.Str::plural('Year',$pet->date_of_birth->age):max(0,(int)$pet->date_of_birth->diffInMonths(today())).' Months' }}@else Age not recorded @endif

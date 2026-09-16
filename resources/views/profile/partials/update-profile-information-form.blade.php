@@ -158,6 +158,13 @@
                         placeholder="{{ __('Enter clinic address') }}">
                     @error('clinic_address')
                         <div class="invalid-feedback">{{ $message }}</div>
+                <div class="col-md-6"><label for="vetCity" class="form-label">Clinic City</label><input class="form-control" id="vetCity" name="city" maxlength="100" value="{{ old('city',$vetProfile->city??'') }}"></div>
+                <div class="col-md-3"><label for="vetLatitude" class="form-label">Clinic Latitude</label><input class="form-control" type="number" step="any" min="-90" max="90" id="vetLatitude" name="latitude" value="{{ old('latitude',$vetProfile->latitude??'') }}"></div>
+                <div class="col-md-3"><label for="vetLongitude" class="form-label">Clinic Longitude</label><input class="form-control" type="number" step="any" min="-180" max="180" id="vetLongitude" name="longitude" value="{{ old('longitude',$vetProfile->longitude??'') }}"></div>
+                <div class="col-12"><small class="text-muted">Add your clinic's map coordinates so pet owners can find nearby care.</small></div>
+                <div class="col-md-6"><input type="hidden" name="online_consultation" value="0"><label><input type="checkbox" name="online_consultation" value="1" @checked(old('online_consultation',$vetProfile->online_consultation??false))> Online Consultation Available</label></div>
+                <div class="col-md-6"><input type="hidden" name="emergency_services" value="0"><label><input type="checkbox" name="emergency_services" value="1" @checked(old('emergency_services',$vetProfile->emergency_services??false))> Emergency Services</label></div>
+
                     @enderror
                 </div>
 

@@ -91,8 +91,11 @@ class PatientController extends Controller
     {
         abort_unless((int) $document->pet_id === (int) $pet->id, 404);
         abort_unless(Appointment::where('vet_id', Auth::id())->where('pet_id', $pet->id)->exists(), 403);
-        abort_unless(Storage::disk('public')->exists($document->file_path), 404, 'This document is no longer available.');
+        $path = $document->file_path;
+        abort_if(str_contains($path, '..') || preg_match('~^(?:[a-z]+:|[/\\\\])~i', $path), 404);
+        $disk = str_starts_with($path, 'medical-documents/') ? 'local' : 'public';
+        abort_unless(Storage::disk($disk)->exists($path), 404, 'This document is no longer available.');
 
-        return Storage::disk('public')->download($document->file_path, basename($document->file_name));
+        return Storage::disk($disk)->download($path, basename($document->file_name), ['Cache-Control'=>'private, no-store', 'X-Content-Type-Options'=>'nosniff']);
     }
 }

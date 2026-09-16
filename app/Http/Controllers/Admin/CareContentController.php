@@ -56,7 +56,7 @@ class CareContentController extends Controller
     {
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'category' => ['required', 'string', 'in:feeding,hygiene,exercise,health,training'],
+            'category' => ['required', 'string', 'in:feeding,grooming,hygiene,exercise,vaccination,health,training'],
             'content_type' => ['required', 'string', 'in:article,video,faq'],
             'content' => ['required', 'string'],
             'media_url' => ['nullable', 'url', 'max:2048'],
@@ -90,7 +90,7 @@ class CareContentController extends Controller
     {
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'category' => ['required', 'string', 'in:feeding,hygiene,exercise,health,training'],
+            'category' => ['required', 'string', 'in:feeding,grooming,hygiene,exercise,vaccination,health,training'],
             'content_type' => ['required', 'string', 'in:article,video,faq'],
             'content' => ['required', 'string'],
             'media_url' => ['nullable', 'url', 'max:2048'],

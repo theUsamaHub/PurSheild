@@ -9,13 +9,13 @@ class VetProfile extends Model
 {
     protected $fillable = [
         'user_id', 'qualification', 'experience_years', 'clinic_name',
-        'clinic_address', 'bio', 'consultation_fee',
+        'clinic_address', 'bio', 'consultation_fee', 'city', 'latitude', 'longitude', 'online_consultation', 'emergency_services',
         'is_verified', 'verified_at', 'verified_by',
         'rejection_reason', 'rejected_at',
     ];
 
     protected $casts = [
-        'experience_years' => 'integer',
+        'experience_years' => 'integer', 'latitude' => 'float', 'longitude' => 'float', 'online_consultation' => 'boolean', 'emergency_services' => 'boolean',
         'consultation_fee' => 'decimal:2',
         'is_verified' => 'boolean',
         'verified_at' => 'datetime',

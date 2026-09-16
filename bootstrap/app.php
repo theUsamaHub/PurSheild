@@ -1,10 +1,15 @@
 <?php
 
+use App\Http\Middleware\IpRestrictionMiddleware;
+use App\Http\Middleware\MaintenanceModeMiddleware;
+use App\Middleware\CheckPermission;
+use App\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -22,21 +27,21 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append([
-            \App\Http\Middleware\MaintenanceModeMiddleware::class,
+            MaintenanceModeMiddleware::class,
         ]);
 
         $middleware->api(prepend: [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            EnsureFrontendRequestsAreStateful::class,
         ]);
 
         $middleware->alias([
-            'role' => \App\Middleware\RoleMiddleware::class,
-            'permission' => \App\Middleware\CheckPermission::class,
-            'ip-restrict' => \App\Http\Middleware\IpRestrictionMiddleware::class,
+            'role' => RoleMiddleware::class,
+            'permission' => CheckPermission::class,
+            'ip-restrict' => IpRestrictionMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*'),
+            fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
     })->create();

@@ -1,136 +1,47 @@
 @extends('layouts.owner.app')
-
+@section('title', 'Find Veterinarians')
+@push('styles')
+@include('owner.partials.discovery-styles')
+@endpush
 @section('content')
-    <div class="mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2 class="h4 mb-0 fw-semibold">{{ __('Browse Veterinarians') }}</h2>
-        </div>
-    </div>
-
-    <!-- Search & Filters -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="GET" action="{{ route('owner.browse-vets') }}" class="row g-3">
-                <div class="col-md-5">
-                    <input type="text" class="form-control" name="search" placeholder="{{ __('Search by name, clinic...') }}" value="{{ request('search') }}">
-                </div>
-                <div class="col-md-4">
-                    <select class="form-select" name="specialization">
-                        <option value="">{{ __('All Specializations') }}</option>
-                        @foreach ($specializations as $spec)
-                            <option value="{{ $spec }}" {{ request('specialization') === $spec ? 'selected' : '' }}>{{ $spec }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-outline-secondary flex-grow-1">
-                        <i class="bi bi-search me-1"></i>{{ __('Filter') }}
-                    </button>
-                    <a href="{{ route('owner.browse-vets') }}" class="btn btn-outline-danger"><i class="bi bi-x"></i></a>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Vet Cards -->
-    <div class="row g-4">
-        @forelse ($vets as $vet)
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 overflow-hidden" style="width:56px;height:56px;background:linear-gradient(135deg,#1a6b3c,#2e9e5a);">
-                                @if ($vet->profile_image)
-                                    <img src="{{ asset('storage/' . $vet->profile_image) }}" alt="{{ $vet->name }}" style="width:56px;height:56px;object-fit:cover;">
-                                @else
-                                    <span class="text-white fw-bold fs-5">{{ substr($vet->name, 0, 1) }}</span>
-                                @endif
-                            </div>
-                            <div class="ms-3">
-                                <h6 class="mb-0 fw-semibold">
-                                    <a href="{{ route('owner.browse-vets.show', $vet) }}" class="text-decoration-none text-dark">{{ $vet->name }}</a>
-                                </h6>
-                                <small class="text-muted">{{ $vet->vetProfile->qualification ?? '-' }}</small>
-                            </div>
-                        </div>
-
-                        <table class="table table-sm table-borderless mb-3">
-                            <tbody>
-                                <tr>
-                                    <td class="text-muted" style="width:130px;font-size:0.8rem;">{{ __('Experience') }}</td>
-                                    <td style="font-size:0.8rem;">{{ $vet->vetProfile->experience ? $vet->vetProfile->experience . ' ' . __('years') : '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-muted" style="font-size:0.8rem;">{{ __('Clinic') }}</td>
-                                    <td style="font-size:0.8rem;">{{ $vet->vetProfile->clinic_name ?? '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-muted" style="font-size:0.8rem;">{{ __('Consultation Fee') }}</td>
-                                    <td style="font-size:0.8rem;">
-                                        <span class="fw-bold text-success">
-                                            {{ $vet->vetProfile->consultation_fee ? number_format($vet->vetProfile->consultation_fee, 2) : '-' }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-muted" style="font-size:0.8rem;">{{ __('Rating') }}</td>
-                                    <td style="font-size:0.8rem;">
-                                        @php
-                                            $stats = $reviewStats->get($vet->id);
-                                            $rating = $stats ? $stats->avg_rating : 0;
-                                            $count = $stats ? $stats->review_count : 0;
-                                        @endphp
-                                        @for ($i = 1; $i <= 5; $i++)
-                                            @if ($i <= floor($rating))
-                                                <i class="bi bi-star-fill text-warning"></i>
-                                            @elseif ($i - $rating < 1 && $i - $rating > 0)
-                                                <i class="bi bi-star-half text-warning"></i>
-                                            @else
-                                                <i class="bi bi-star text-warning"></i>
-                                            @endif
-                                        @endfor
-                                        <span class="text-muted ms-1">({{ number_format($rating, 1) }}) {{ $count > 0 ? $count . ' ' . __('reviews') : '' }}</span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        @if ($vet->specializations->count() > 0)
-                            <div class="mb-3">
-                                @foreach ($vet->specializations as $spec)
-                                    <span class="badge bg-success bg-opacity-10 text-success" style="font-size:0.7rem;">{{ $spec->name }}</span>
-                                @endforeach
-                            </div>
-                        @endif
-
-                        <div class="d-flex gap-2">
-                            <a href="{{ route('owner.browse-vets.show', $vet) }}" class="btn btn-sm btn-outline-primary flex-grow-1">
-                                <i class="bi bi-person me-1"></i>{{ __('View') }}
-                            </a>
-                            <a href="{{ route('owner.appointments.create', ['vet_id' => $vet->id]) }}" class="btn btn-sm btn-primary flex-grow-1">
-                                <i class="bi bi-calendar-plus me-1"></i>{{ __('Book') }}
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @empty
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body text-center py-5">
-                        <div class="empty-state">
-                            <i class="bi bi-heartbeat" style="font-size:3rem;opacity:0.3;"></i>
-                            <p class="mt-2 text-muted">{{ __('No veterinarians found.') }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endforelse
-    </div>
-
-    @if ($vets->hasPages())
-        <div class="mt-4">
-            {{ $vets->links() }}
-        </div>
-    @endif
+<div class="od-page">
+<div class="op-breadcrumb"><a href="{{ route('owner.dashboard') }}"><i class="bi bi-house-door-fill"></i> Dashboard</a><i class="bi bi-chevron-right"></i><span>Find Veterinarians</span></div>
+<div class="od-layout"><div>
+<div class="op-heading"><div><h1>@include('owner.partials.icon',['name'=>'vet']) Find Veterinarians</h1><p>Search and connect with trusted veterinarians near you.</p></div><div class="op-note">@include('owner.partials.icon',['name'=>'paw'])<span>“Better care,<br>for brighter tomorrows.”</span></div></div>
+<form class="od-vet-search" method="GET" action="{{ route('owner.browse-vets') }}">
+@foreach(request()->except(['search','specialization_id','location','availability','page','compare']) as $field=>$value)@if(is_scalar($value))<input type="hidden" name="{{ $field }}" value="{{ $value }}">@endif
+@endforeach
+<input type="search" name="search" value="{{ request('search') }}" maxlength="200" aria-label="Search veterinarians" placeholder="Search by name, clinic, or keyword...">
+<select name="specialization_id" aria-label="Specialization"><option value="">All Specializations</option>@foreach($specializations as $item)<option value="{{ $item->id }}" @selected(request('specialization_id')==$item->id)>{{ $item->name }}</option>@endforeach</select>
+<select name="location" aria-label="Location"><option value="">All Locations</option>@foreach($locations as $city)<option @selected(request('location')===$city)>{{ $city }}</option>@endforeach</select>
+<select name="availability" aria-label="Availability"><option value="">Availability</option>@foreach(['today'=>'Today','tomorrow'=>'Tomorrow','week'=>'This Week'] as $value=>$label)<option value="{{ $value }}" @selected(request('availability')===$value)>{{ $label }}</option>@endforeach</select><button type="submit" class="op-button op-primary">Search</button></form>
+<nav class="od-vet-categories" aria-label="Veterinary specializations"><a class="{{ !request('specialization_id')?'active':'' }}" href="{{ route('owner.browse-vets',request()->except(['specialization_id','page'])) }}">All</a>@foreach($specializations as $item)<a class="{{ request('specialization_id')==$item->id?'active':'' }}" href="{{ route('owner.browse-vets',array_merge(request()->except(['specialization_id','page']),['specialization_id'=>$item->id])) }}">{{ $item->name }}</a>@endforeach</nav>
+<div class="od-vet-toolbar"><span>Showing {{ $vets->total() }} veterinarians</span><form method="GET" action="{{ route('owner.browse-vets') }}" data-owner-filters>@foreach(request()->except(['sort','page','compare']) as $field=>$value)@if(is_scalar($value))<input type="hidden" name="{{ $field }}" value="{{ $value }}">@endif
+@endforeach<label for="vetSort">Sort by:</label><select name="sort" id="vetSort">@foreach(['rating'=>'Top Rated','nearest'=>'Nearest First','name'=>'Name A–Z','fee'=>'Lowest Fee'] as $value=>$label)<option value="{{ $value }}" @selected(request('sort','rating')===$value)>{{ $label }}</option>@endforeach</select><button class="visually-hidden" type="submit">Sort</button></form><div class="od-view-toggle">@foreach(['grid','list'] as $view)<a class="{{ request('view','grid')===$view?'active':'' }}" href="{{ route('owner.browse-vets',array_merge(request()->except('view'),['view'=>$view])) }}"><i class="bi bi-{{ $view==='grid'?'grid-fill':'list-ul' }}"></i> {{ ucfirst($view) }}</a>@endforeach</div></div>
+@if(request('sort')==='nearest'&&!request()->filled('latitude'))<div class="od-filter-notice">Use your location in Filter Options to sort by distance.</div>@endif
+<div class="od-vet-grid {{ request('view')==='list'?'is-list':'' }}">
+@forelse($vets as $vet)<article class="od-vet"><div class="od-vet-main">@include('owner.partials.discovery-photo',['path'=>$vet->profile_image,'label'=>$vet->name,'photoClass'=>'od-vet-photo','fallbackIcon'=>'person-fill'])<div><h2>{{ $vet->name }}</h2><p>{{ $vet->specializations->first()?->name?:'Veterinarian' }}</p><p>{{ $vet->vetProfile->clinic_name?:'Independent Practice' }}</p><p><i class="bi bi-geo-alt-fill"></i> {{ $vet->vetProfile->city?:Str::limit($vet->vetProfile->clinic_address?:'Location not listed',35) }}</p><p class="od-rating"><i class="bi bi-star-fill"></i> {{ $vet->review_count?number_format($vet->rating,1):'New' }} ({{ $vet->review_count }} reviews)</p>@if($vet->distance!==null)<p><i class="bi bi-geo-alt-fill"></i> {{ number_format($vet->distance,1) }} km</p>@endif</div><button type="button" class="od-favorite" data-favorite="{{ route('owner.favorites.store',['kind'=>'vet','target'=>$vet->id]) }}" aria-label="Save {{ $vet->name }} to favorites" aria-pressed="{{ in_array($vet->id,$favorites)?'true':'false' }}"><i class="bi bi-heart{{ in_array($vet->id,$favorites)?'-fill':'' }}"></i></button></div>
+<div class="od-vet-tags">@foreach($vet->specializations->take(3) as $specialization)<span>{{ $specialization->name }}</span>@endforeach @if($vet->vetProfile->online_consultation)<span>Online Consultation</span>@endif @if($vet->vetProfile->emergency_services)<span>Emergency Services</span>@endif</div>
+<div class="od-vet-availability">@if($vet->next_available)<b><i class="bi bi-check-circle-fill"></i> Available {{ match($vet->next_available['day']){0=>'Today',1=>'Tomorrow',default=>$vet->next_available['date']->format('D')} }}</b><span>{{ \Carbon\Carbon::parse($vet->next_available['time'])->format('h:i A') }} – {{ \Carbon\Carbon::parse($vet->next_available['end'])->format('h:i A') }}</span>@else<span>Contact clinic for availability</span>@endif</div>
+<div class="od-vet-actions"><a class="op-button" href="{{ route('owner.browse-vets.show',$vet) }}">View Profile</a><a class="op-button op-primary" href="{{ route('owner.appointments.create',['vet_id'=>$vet->id,'appointment_date'=>($vet->next_available['date']??null)?->toDateString(),'appointment_time'=>$vet->next_available['time']??null]) }}">Book Appointment</a></div><label class="od-compare-select"><input type="checkbox" form="vetCompareForm" name="compare[]" value="{{ $vet->id }}" @checked(in_array($vet->id,request('compare',[])))> Compare</label></article>
+@empty<div class="op-empty" style="grid-column:1/-1">No veterinarians match your filters.<br><a href="{{ route('owner.browse-vets') }}">Clear Filters</a></div>@endforelse
+</div>@include('owner.partials.pagination',['items'=>$vets])
+@if($comparison->count())<section class="od-section" id="comparison"><div class="od-section-header"><h2>Compare Veterinarians</h2><a href="{{ route('owner.browse-vets',request()->except('compare')) }}">Close comparison</a></div><div class="table-responsive"><table class="od-compare-table"><thead><tr><th>Veterinarian</th>@foreach($comparison as $vet)<th>{{ $vet->name }}</th>@endforeach</tr></thead><tbody>@foreach(['clinic_name'=>'Clinic','qualification'=>'Qualification','experience_years'=>'Years of Experience','consultation_fee'=>'Consultation Fee','city'=>'City','online_consultation'=>'Online Consultation','emergency_services'=>'Emergency Services'] as $field=>$label)<tr><th>{{ $label }}</th>@foreach($comparison as $vet)<td>{{ in_array($field,['online_consultation','emergency_services'])?($vet->vetProfile->$field?'Yes':'No'):($vet->vetProfile->$field??'Not listed') }}</td>@endforeach</tr>@endforeach<tr><th>Profile</th>@foreach($comparison as $vet)<td><a href="{{ route('owner.browse-vets.show',$vet) }}">View Profile →</a></td>@endforeach</tr></tbody></table></div></section>@endif
+@include('owner.partials.discovery-banner')
+</div><aside class="od-aside">
+<section class="od-side-card"><div class="od-section-header"><h2>@include('owner.partials.icon',['name'=>'geo-alt-fill']) Search by Location</h2></div><iframe class="od-map" loading="lazy" title="Veterinary clinics on map" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q={{ urlencode('veterinary clinics '.(request('location')?:($locations->first()?:'Pakistan'))) }}&amp;z=12&amp;output=embed"></iframe><p class="od-map-note">Map results are provided by Google Maps.</p></section>
+<section class="od-side-card"><div class="od-section-header"><h2>@include('owner.partials.icon',['name'=>'funnel']) Filter Options</h2><a class="od-clear" href="{{ route('owner.browse-vets') }}">Clear Filters</a></div><form class="od-fields" method="GET" action="{{ route('owner.browse-vets') }}">
+@foreach(request()->only(['search','sort','view']) as $field=>$value)<input type="hidden" name="{{ $field }}" value="{{ $value }}">@endforeach
+<input type="hidden" name="latitude" value="{{ request('latitude') }}"><input type="hidden" name="longitude" value="{{ request('longitude') }}">
+<div class="od-field-pair"><div><label for="vetLocation">Location</label><select id="vetLocation" name="location"><option value="">All Locations</option>@foreach($locations as $city)<option @selected(request('location')===$city)>{{ $city }}</option>@endforeach</select></div><div><label for="vetDistance">Distance</label><select id="vetDistance" name="distance" @disabled(!request()->filled('latitude'))><option value="">Any Distance</option>@foreach([5,10,25,50,100] as $distance)<option value="{{ $distance }}" @selected(request('distance')==$distance)>Within {{ $distance }} km</option>@endforeach</select></div></div>
+<button type="button" class="od-location-button" id="useVetLocation"><i class="bi bi-crosshair"></i> Use my location</button><small id="locationStatus" role="status" class="op-muted"></small>
+<div><label for="vetSpecialization">Specialization</label><select name="specialization_id" id="vetSpecialization"><option value="">All Specializations</option>@foreach($specializations as $item)<option value="{{ $item->id }}" @selected(request('specialization_id')==$item->id)>{{ $item->name }}</option>@endforeach</select></div>
+<div><label for="vetAvailability">Availability</label><select id="vetAvailability" name="availability"><option value="">Any Day</option>@foreach(['today'=>'Today','tomorrow'=>'Tomorrow','week'=>'This Week'] as $value=>$label)<option value="{{ $value }}" @selected(request('availability')===$value)>{{ $label }}</option>@endforeach</select></div>
+<div><label for="vetRating">Rating</label><select name="rating" id="vetRating"><option value="">Any Rating</option>@foreach([3,4,4.5,5] as $rating)<option value="{{ $rating }}" @selected(request('rating')==$rating)>{{ $rating }}+ Stars</option>@endforeach</select></div>
+<label class="od-switch">Online Consultation Available <input type="checkbox" name="online" value="1" @checked(request('online'))></label><label class="od-switch">Emergency Services <input type="checkbox" name="emergency" value="1" @checked(request('emergency'))></label><label class="od-saved-filter"><input type="checkbox" name="favorites" value="1" @checked(request('favorites'))> Saved veterinarians only</label><button type="submit" class="op-button op-primary">Apply Filters</button></form></section>
+<section class="od-info-card">@include('owner.partials.icon',['name'=>'paw'])<div><h2>Need Help?</h2><p>Select two or three vets to compare their services.</p><form id="vetCompareForm" method="GET" action="{{ route('owner.browse-vets') }}#comparison">@foreach(request()->except(['compare']) as $field=>$value)@if(is_scalar($value))<input type="hidden" name="{{ $field }}" value="{{ $value }}">@endif
+@endforeach<button type="submit" class="op-button">Compare Veterinarians <i class="bi bi-arrow-right"></i></button></form></div></section>
+</aside></div>
+</div>
+@include('owner.partials.discovery-scripts')
 @endsection

@@ -1,104 +1,23 @@
 @extends('layouts.owner.app')
-
+@section('title','My Pets')
 @section('content')
-    <div class="mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2 class="h4 mb-0 fw-semibold">{{ __('My Pets') }}</h2>
-            <a href="{{ route('owner.pets.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-circle me-1"></i>{{ __('Add Pet') }}
-            </a>
-        </div>
-    </div>
-
-    <div class="row g-3">
-        @forelse($pets as $pet)
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div class="d-flex align-items-center">
-                                @php
-                                    $primaryImage = $pet->images->firstWhere('is_primary') ?? $pet->images->first();
-                                @endphp
-                                @if ($primaryImage)
-                                    <img src="{{ asset('storage/' . $primaryImage->image_path) }}" alt="{{ $pet->name }}"
-                                        class="rounded-circle me-3" style="width:48px;height:48px;object-fit:cover;">
-                                @elseif ($pet->profile_image)
-                                    <img src="{{ asset('storage/' . $pet->profile_image) }}" alt="{{ $pet->name }}"
-                                        class="rounded-circle me-3" style="width:48px;height:48px;object-fit:cover;">
-                                @else
-                                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center me-3"
-                                        style="width:48px;height:48px;background:linear-gradient(135deg,#1a6b3c,#2e9e5a);">
-                                        <i class="bi bi-heart-fill text-white"></i>
-                                    </div>
-                                @endif
-                                <div>
-                                    <h5 class="card-title mb-1 fw-semibold">{{ $pet->name }}</h5>
-                                    <div class="text-muted" style="font-size:0.8rem;">
-                                        {{ $pet->species->name ?? '-' }}{{ $pet->breed ? ' - ' . $pet->breed->name : '' }}
-                                    </div>
-                                </div>
-                            </div>
-                            @if ($pet->gender)
-                                <span class="badge {{ $pet->gender === 'male' ? 'bg-info' : 'bg-pink' }}" style="{{ $pet->gender === 'female' ? 'background-color:#ec4899 !important;' : '' }}">
-                                    <i class="bi {{ $pet->gender === 'male' ? 'bi-gender-male' : 'bi-gender-female' }} me-1"></i>{{ ucfirst($pet->gender) }}
-                                </span>
-                            @endif
-                        </div>
-
-                        <div class="mb-3">
-                            @if ($pet->date_of_birth)
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span class="text-muted" style="font-size:0.8rem;">{{ __('Age') }}</span>
-                                    <span style="font-size:0.8rem;">{{ \Carbon\Carbon::parse($pet->date_of_birth)->age }} {{ __('years') }}</span>
-                                </div>
-                            @endif
-                            @if ($pet->weight)
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span class="text-muted" style="font-size:0.8rem;">{{ __('Weight') }}</span>
-                                    <span style="font-size:0.8rem;">{{ $pet->weight }} kg</span>
-                                </div>
-                            @endif
-                            @if ($pet->color)
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span class="text-muted" style="font-size:0.8rem;">{{ __('Color') }}</span>
-                                    <span style="font-size:0.8rem;">{{ $pet->color }}</span>
-                                </div>
-                            @endif
-                        </div>
-
-                        <div class="d-flex gap-2">
-                            <a href="{{ route('owner.pets.show', $pet) }}" class="btn btn-outline-primary btn-sm flex-grow-1">
-                                <i class="bi bi-eye me-1"></i>{{ __('View') }}
-                            </a>
-                            <a href="{{ route('owner.pets.edit', $pet) }}" class="btn btn-outline-warning btn-sm flex-grow-1">
-                                <i class="bi bi-pencil me-1"></i>{{ __('Edit') }}
-                            </a>
-                            <form action="{{ route('owner.pets.destroy', $pet) }}" method="POST" class="d-inline" onsubmit="return confirm('{{ __('Are you sure you want to delete this pet?') }}')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-outline-danger btn-sm" title="{{ __('Delete') }}">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @empty
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body text-center py-5">
-                        <div class="empty-state">
-                            <i class="bi bi-heart" style="font-size:3rem;opacity:0.3;"></i>
-                            <p class="mt-2 text-muted">{{ __('You haven\'t added any pets yet.') }}</p>
-                            <a href="{{ route('owner.pets.create') }}" class="btn btn-primary btn-sm mt-2">
-                                <i class="bi bi-plus-circle me-1"></i>{{ __('Add Your First Pet') }}
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endforelse
-    </div>
+<div class="op-breadcrumb"><a href="{{ route('owner.dashboard') }}"><i class="bi bi-house-door-fill"></i> Dashboard</a><i class="bi bi-chevron-right"></i><span>My Pets</span></div>
+<div class="op-heading"><div><h1>@include('owner.partials.icon',['name'=>'paw']) My Pets</h1><p>Manage your pet profiles, view health status, and keep their information up to date.</p></div><div class="op-heading-actions"><div class="op-note">@include('owner.partials.icon',['name'=>'heart'])<span>“Happy pets make<br>happier days.”</span></div><a class="op-button op-primary op-large" href="{{ route('owner.pets.index',array_merge(request()->except(['page','view','panel']),['panel'=>'add'])) }}#addPet">@include('owner.partials.icon',['name'=>'plus']) Add Pet</a></div></div>
+@if(request('view')==='health')<div class="op-health-choice">Select a pet below to view or add its health records and vaccinations.</div>@endif
+<div class="op-pet-toolbar"><nav class="op-tabs" aria-label="Pet species"><a class="{{ !request('species_id')?'active':'' }}" href="{{ route('owner.pets.index',request()->except(['species_id','page'])) }}">All Pets ({{ $totalPets }})</a>@foreach($speciesCounts->take(4) as $group)<a class="{{ request('species_id')==$group->species_id?'active':'' }}" href="{{ route('owner.pets.index',array_merge(request()->except(['species_id','page']),['species_id'=>$group->species_id])) }}">{{ Str::plural($group->species?->name??'Other') }} ({{ $group->total }})</a>@endforeach</nav>
+<form class="op-pet-filters" action="{{ route('owner.pets.index') }}" method="GET" data-owner-filters>@foreach(request()->only(['search','panel','view']) as $key=>$value)<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endforeach
+<select name="status" aria-label="Pet health status"><option value="">All Status</option><option value="healthy" @selected(request('status')==='healthy')>Healthy</option><option value="vaccination_due" @selected(request('status')==='vaccination_due')>Vaccination Due</option></select>
+<select name="species_id" aria-label="Filter pets by species"><option value="">All Species</option>@foreach($species as $item)<option value="{{ $item->id }}" @selected(request('species_id')==$item->id)>{{ $item->name }}</option>@endforeach</select>
+<select name="sort" aria-label="Sort pets">@foreach(['newest'=>'Newest First','oldest'=>'Oldest First','name'=>'Name A–Z'] as $value=>$label)<option value="{{ $value }}" @selected(request('sort','newest')===$value)>{{ $label }}</option>@endforeach</select><button type="submit" class="visually-hidden">Apply pet filters</button>
+@if(request()->filled('search')||request()->filled('status')||request()->filled('species_id'))<a class="op-button" href="{{ route('owner.pets.index',request()->only(['panel','view'])) }}">Clear Filters</a>@endif</form></div>
+<div class="op-pets-layout {{ $showAdd?'':'no-editor' }}"><div><div class="op-pet-grid">@forelse($pets as $pet)<article class="op-pet-card"><div class="op-pet-cover">@include('owner.partials.photo',['pet'=>$pet])<div class="dropdown"><button class="op-more" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More actions for {{ $pet->name }}"><i class="bi bi-three-dots"></i></button><ul class="dropdown-menu dropdown-menu-end"><li><a class="dropdown-item" href="{{ route('owner.health.index',$pet) }}">Health Records</a></li><li><a class="dropdown-item" href="{{ route('owner.pets.edit',$pet) }}">Edit Pet</a></li></ul></div></div><h2>{{ $pet->name }}</h2><ul class="op-pet-info"><li>@include('owner.partials.icon',['name'=>in_array(strtolower($pet->species?->name??''),['dog','cat','rabbit'])?strtolower($pet->species->name):'paw']){{ $pet->breed?->name ?: $pet->species?->name }}</li><li>@include('owner.partials.icon',['name'=>'gender-'.($pet->gender?:'ambiguous')]){{ ucfirst($pet->gender??'Not recorded') }}</li><li>@include('owner.partials.icon',['name'=>'calendar'])<span>@include('owner.partials.age',['pet'=>$pet]) @if($pet->date_of_birth) ({{ $pet->date_of_birth->format('j M Y') }}) @endif</span></li><li>@include('owner.partials.icon',['name'=>'weight']){{ $pet->weight!==null?rtrim(rtrim($pet->weight,'0'),'.').' kg':'Weight not recorded' }}</li></ul>
+@include('owner.partials.health',['pet'=>$pet])
+<div class="op-pet-actions"><a class="op-button op-small" href="{{ request('view')==='health'?route('owner.health.index',$pet):route('owner.pets.show',$pet) }}"><i class="bi bi-eye-fill"></i>{{ request('view')==='health'?'Health Records':'View' }}</a><a class="op-button op-small" href="{{ route('owner.pets.edit',$pet) }}"><i class="bi bi-pencil-fill"></i>Edit</a><form method="POST" action="{{ route('owner.pets.destroy',$pet) }}" onsubmit="return confirm('Delete this pet profile? This cannot be undone. Profiles with health records or appointments must be kept.')">@csrf @method('DELETE')<button type="submit" class="op-button op-small op-danger"><i class="bi bi-trash"></i>Delete</button></form></div></article>@empty<div class="op-empty">@include('owner.partials.icon',['name'=>'paw'])<p class="mt-2">No pets match your filters.</p><a class="op-button" href="{{ route('owner.pets.index',['panel'=>'add']) }}">Add a pet or clear filters</a></div>@endforelse</div>@include('owner.partials.pagination',['items'=>$pets])
+<section class="op-card op-pet-summary"><div class="op-card-header"><h2>@include('owner.partials.icon',['name'=>'paw']) Pet Summary</h2></div>
+@php($palette=['#4388da','#ff819c','#63bba0','#9970d5','#eda64a'])
+@php($segments=[])
+@php($angle=0)
+@foreach($speciesCounts as $group)@php($next=$angle+($totalPets?360*$group->total/$totalPets:0))@php($segments[]=$palette[$loop->index%5].' '.$angle.'deg '.$next.'deg')@php($angle=$next)@endforeach
+<div class="op-summary-body"><div class="op-donut" style="background:{{ $segments?'conic-gradient('.implode(',',$segments).')':'#e4eef0' }}"><div><strong>{{ $totalPets }}</strong><small>Total Pets</small></div></div><div class="op-legend">@foreach($speciesCounts as $group)<div><span style="background:{{ $palette[$loop->index%5] }}"></span>{{ Str::plural($group->species?->name??'Other') }}<b>{{ $group->total }}</b></div>@endforeach</div><div class="op-tip">@include('owner.partials.icon',['name'=>'paw'])<div><h3>Pet Care Tip</h3><p>Keep your pet’s profile updated<br>with latest vaccinations and<br><a href="{{ route('owner.health.overview') }}">health records.</a></p></div><a href="{{ route('owner.care.index') }}" aria-label="View pet care tips"><i class="bi bi-arrow-right"></i></a></div></div></section></div>
+@if($showAdd)@include('owner.pets.add-panel')@endif</div>
 @endsection

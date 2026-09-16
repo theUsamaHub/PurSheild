@@ -65,6 +65,8 @@
                         <option value="">{{ __('All Categories') }}</option>
                         <option value="feeding" {{ request('category') === 'feeding' ? 'selected' : '' }}>{{ __('Feeding') }}</option>
                         <option value="hygiene" {{ request('category') === 'hygiene' ? 'selected' : '' }}>{{ __('Hygiene') }}</option>
+                        <option value="grooming" {{ request('category') === 'grooming' ? 'selected' : '' }}>{{ __('Grooming') }}</option>
+                        <option value="vaccination" {{ request('category') === 'vaccination' ? 'selected' : '' }}>{{ __('Vaccination') }}</option>
                         <option value="exercise" {{ request('category') === 'exercise' ? 'selected' : '' }}>{{ __('Exercise') }}</option>
                         <option value="health" {{ request('category') === 'health' ? 'selected' : '' }}>{{ __('Health') }}</option>
                         <option value="training" {{ request('category') === 'training' ? 'selected' : '' }}>{{ __('Training') }}</option>
