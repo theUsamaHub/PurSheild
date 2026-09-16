@@ -173,7 +173,7 @@
                     <i class="bi bi-list"></i>
                 </button>
 
-                <div class="pc-search" onclick="document.querySelector('[x-data=&quot;commandPalette()&quot;]').__x?.toggle();$dispatch('toggle-command-palette')" style="cursor:pointer;">
+                <div class="pc-search" onclick="window.dispatchEvent(new Event('toggle-command-palette'))" style="cursor:pointer;">
                     <i class="bi bi-search"></i>
                     <input type="text" readonly placeholder="{{ __('Search pages... (Ctrl+K)') }}" style="cursor:pointer;">
                     <kbd>Ctrl+K</kbd>
