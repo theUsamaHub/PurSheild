@@ -50,7 +50,7 @@ $storageUrl=fn($path)=>$path?\Illuminate\Support\Facades\Storage::disk('public')
 <section class="od-section" style="margin-bottom:12px;">
 @if($sortedImages->count()>0)
 <div>
-    <div class="pet-photo-hero" onclick="document.querySelector('.od-lightbox').classList.add('is-open');document.body.style.overflow='hidden'">
+    <div class="pet-photo-hero" onclick="openPetLightbox(0)">
         @if($primaryImage)
         <img src="{{ $storageUrl($primaryImage->image_path) }}" alt="{{ $pet->name }}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         <div class="pet-initials" style="display:none;">{{ mb_strtoupper(mb_substr($pet->name,0,1)) }}</div>
