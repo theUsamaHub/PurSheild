@@ -30,14 +30,9 @@
 @endpush
 @section('content')
 @php
-function petImageUrl($path){
-    if(!$path) return null;
-    if(preg_match('~^https?://~i',$path)) return $path;
-    return \Illuminate\Support\Facades\Storage::disk('public')->url($path);
-}
-$primaryImage=$pet->images->sortByDesc('is_primary')->sortBy('sort_order')->first();
+$primaryImage=$pet->images->firstWhere('is_primary',true)??$pet->images->sortBy('sort_order')->first();
 $sortedImages=$pet->images->sortBy('sort_order')->values();
-$imageUrls=$sortedImages->map(fn($img)=>petImageUrl($img->image_path))->filter()->toArray();
+$storageUrl=fn($path)=>$path?\Illuminate\Support\Facades\Storage::disk('public')->url($path):null;
 @endphp
 <div class="od-page">
 <div class="op-breadcrumb"><a href="{{ route('owner.dashboard') }}"><i class="bi bi-house-door-fill"></i> Dashboard</a><i class="bi bi-chevron-right"></i><a href="{{ route('owner.pets.index') }}">My Pets</a><i class="bi bi-chevron-right"></i><span>{{ $pet->name }}</span></div>
@@ -48,16 +43,16 @@ $imageUrls=$sortedImages->map(fn($img)=>petImageUrl($img->image_path))->filter()
     <div style="display:flex;gap:8px;"><a class="op-button" href="{{ route('owner.pets.index') }}"><i class="bi bi-arrow-left"></i> Back</a><a class="op-button op-primary" href="{{ route('owner.pets.edit',$pet) }}"><i class="bi bi-pencil"></i> Edit</a></div>
 </div>
 
-<div class="od-layout" x-data="petLightbox()">
+<div class="od-layout">
 <div>
 
  {{-- Pet Photo --}}
 <section class="od-section" style="margin-bottom:12px;">
 @if($sortedImages->count()>0)
 <div>
-    <div class="pet-photo-hero">
+    <div class="pet-photo-hero" onclick="document.querySelector('.od-lightbox').classList.add('is-open');document.body.style.overflow='hidden'">
         @if($primaryImage)
-        <img src="{{ petImageUrl($primaryImage->image_path) }}" :src="images[current]" alt="{{ $pet->name }}" @click="open(current)" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <img src="{{ $storageUrl($primaryImage->image_path) }}" alt="{{ $pet->name }}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         <div class="pet-initials" style="display:none;">{{ mb_strtoupper(mb_substr($pet->name,0,1)) }}</div>
         @else
         <div class="pet-initials">{{ mb_strtoupper(mb_substr($pet->name,0,1)) }}</div>
@@ -66,7 +61,7 @@ $imageUrls=$sortedImages->map(fn($img)=>petImageUrl($img->image_path))->filter()
     @if($sortedImages->count()>1)
     <div class="pet-thumbs">
     @foreach($sortedImages as $idx=>$image)
-    <img class="pet-thumb" :class="{'active':current==={{ $idx }}}" src="{{ petImageUrl($image->image_path) }}" alt="{{ $pet->name }} photo {{ $idx+1 }}" @click="current={{ $idx }}" loading="lazy">
+    <img class="pet-thumb" data-idx="{{ $idx }}" src="{{ $storageUrl($image->image_path) }}" alt="{{ $pet->name }} photo {{ $idx+1 }}" onclick="switchPetImage({{ $idx }})" loading="lazy">
     @endforeach
     </div>
     @endif
@@ -80,12 +75,12 @@ $imageUrls=$sortedImages->map(fn($img)=>petImageUrl($img->image_path))->filter()
 @endif
 
 {{-- Lightbox --}}
-<div class="od-lightbox" :class="{'is-open':opened}" @click.self="close()" @keydown.escape.window="close()" @keydown.left.window="prev()" @keydown.right.window="next()" x-show="opened" x-cloak>
-<button class="od-lightbox-close" @click="close()"><i class="bi bi-x-lg"></i></button>
-<button class="od-lightbox-nav od-lightbox-prev" @click="prev()" x-show="images.length>1"><i class="bi bi-chevron-left"></i></button>
-<img :src="images[current]" alt="{{ $pet->name }}">
-<button class="od-lightbox-nav od-lightbox-next" @click="next()" x-show="images.length>1"><i class="bi bi-chevron-right"></i></button>
-<div class="od-lightbox-counter" x-text="`${current+1} / ${images.length}`" x-show="images.length>1"></div>
+<div class="od-lightbox" id="petLightbox" onclick="if(event.target===this)closePetLightbox()">
+<button class="od-lightbox-close" onclick="closePetLightbox()"><i class="bi bi-x-lg"></i></button>
+<button class="od-lightbox-nav od-lightbox-prev" id="lbPrev" onclick="navPetLightbox(-1)"><i class="bi bi-chevron-left"></i></button>
+<img id="lbImg" src="" alt="{{ $pet->name }}">
+<button class="od-lightbox-nav od-lightbox-next" id="lbNext" onclick="navPetLightbox(1)"><i class="bi bi-chevron-right"></i></button>
+<div class="od-lightbox-counter" id="lbCounter"></div>
 </div>
 </section>
 
@@ -225,7 +220,25 @@ $imageUrls=$sortedImages->map(fn($img)=>petImageUrl($img->image_path))->filter()
 
 @push('scripts')
 <script>
-function petLightbox(){return{current:0,opened:false,images:@js($imageUrls),open(i){this.current=i;this.opened=true;document.body.style.overflow='hidden';},close(){this.opened=false;document.body.style.overflow='';},next(){this.current=(this.current+1)%this.images.length;},prev(){this.current=(this.current-1+this.images.length)%this.images.length;};}
+(function(){
+var urls=@js($sortedImages->map(fn($img)=>\Illuminate\Support\Facades\Storage::disk('public')->url($img->image_path))->filter()->values()->toArray());
+var current=0;
+var lb=document.getElementById('petLightbox');
+var lbImg=document.getElementById('lbImg');
+var lbCounter=document.getElementById('lbCounter');
+var lbPrev=document.getElementById('lbPrev');
+var lbNext=document.getElementById('lbNext');
+function updateLightbox(){lbImg.src=urls[current];lbCounter.textContent=(current+1)+' / '+urls.length;lbPrev.style.display=urls.length>1?'flex':'none';lbNext.style.display=urls.length>1?'flex':'none';}
+window.openPetLightbox=function(i){current=i;updateLightbox();lb.classList.add('is-open');document.body.style.overflow='hidden';};
+window.closePetLightbox=function(){lb.classList.remove('is-open');document.body.style.overflow='';};
+window.navPetLightbox=function(d){current=(current+d+urls.length)%urls.length;updateLightbox();};
+window.switchPetImage=function(i){current=i;var hero=document.querySelector('.pet-photo-hero img');if(hero)hero.src=urls[i];document.querySelectorAll('.pet-thumb').forEach(function(t,idx){t.classList.toggle('active',idx===i);});};
+document.addEventListener('keydown',function(e){if(!lb.classList.contains('is-open'))return;if(e.key==='Escape')closePetLightbox();if(e.key==='ArrowLeft')navPetLightbox(-1);if(e.key==='ArrowRight')navPetLightbox(1);});
+var heroImg=document.querySelector('.pet-photo-hero img');
+if(heroImg&&urls.length>0)heroImg.src=urls[0];
+var thumbs=document.querySelectorAll('.pet-thumb');
+if(thumbs.length>0)thumbs[0].classList.add('active');
+})();
 </script>
 @endpush
 @endsection

@@ -9,11 +9,8 @@
 @endpush
 @section('content')
 @php
-function petEditUrl($path){
-    if(!$path) return null;
-    if(preg_match('~^https?://~i',$path)) return $path;
-    return \Illuminate\Support\Facades\Storage::disk('public')->url($path);
-}
+$primaryImage=$pet->images->firstWhere('is_primary',true)??$pet->images->sortBy('sort_order')->first();
+$storageUrl=fn($path)=>$path?\Illuminate\Support\Facades\Storage::disk('public')->url($path):null;
 @endphp
 <div class="od-page">
 <div class="op-breadcrumb"><a href="{{ route('owner.dashboard') }}"><i class="bi bi-house-door-fill"></i> Dashboard</a><i class="bi bi-chevron-right"></i><a href="{{ route('owner.pets.index') }}">My Pets</a><i class="bi bi-chevron-right"></i><a href="{{ route('owner.pets.show',$pet) }}">{{ $pet->name }}</a><i class="bi bi-chevron-right"></i><span>Edit</span></div>
@@ -70,14 +67,14 @@ function petEditUrl($path){
 {{-- Pet Photo --}}
 <section class="od-side-card">
 <div class="od-section-header"><h2>@include('owner.partials.icon',['name'=>'images']) Photo</h2></div>
-@if($primaryImage=$pet->images->sortByDesc('is_primary')->sortBy('sort_order')->first())
+@if($primaryImage)
 <div style="border-radius:8px;overflow:hidden;margin-bottom:10px;">
-<img src="{{ petEditUrl($primaryImage->image_path) }}" alt="{{ $pet->name }}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;" onerror="this.parentElement.innerHTML='<div class=\'pet-initials-thumb\'>{{ mb_strtoupper(mb_substr($pet->name,0,1)) }}</div>'">
+<img src="{{ $storageUrl($primaryImage->image_path) }}" alt="{{ $pet->name }}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;" onerror="this.parentElement.innerHTML='<div class=\'pet-initials-thumb\'>{{ mb_strtoupper(mb_substr($pet->name,0,1)) }}</div>'">
 </div>
 @if($pet->images->count()>1)
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;">
 @foreach($pet->images->sortBy('sort_order')->take(4) as $img)
-<img src="{{ petEditUrl($img->image_path) }}" alt="" style="width:100%;aspect-ratio:1;border-radius:4px;object-fit:cover;{{ $img->is_primary?'border:2px solid #00865e;':'' }}" onerror="this.style.display='none'">
+<img src="{{ $storageUrl($img->image_path) }}" alt="" style="width:100%;aspect-ratio:1;border-radius:4px;object-fit:cover;{{ $img->is_primary?'border:2px solid #00865e;':'' }}" onerror="this.style.display='none'">
 @endforeach
 </div>
 @endif
@@ -98,7 +95,7 @@ function petEditUrl($path){
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;">
 @foreach($pet->images->sortBy('sort_order') as $image)
 <div style="position:relative;border-radius:6px;overflow:hidden;" id="img-wrap-{{ $image->id }}">
-<img src="{{ petEditUrl($image->image_path) }}" alt="" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;" onerror="this.style.display='none'">
+<img src="{{ $storageUrl($image->image_path) }}" alt="" style="width:100%;aspect-ratio:1;object-fit:cover;display:block;" onerror="this.style.display='none'">
 @if($image->is_primary)<span style="position:absolute;top:3px;left:3px;background:#f5ae00;color:#fff;font-size:8px;font-weight:700;padding:2px 5px;border-radius:3px;"><i class="bi bi-star-fill"></i></span>@endif
 <label style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.6);display:flex;justify-content:center;gap:6px;padding:3px;cursor:pointer;">
 <input type="checkbox" name="remove_images[]" value="{{ $image->id }}" class="d-none" onchange="document.getElementById('img-wrap-{{ $image->id }}').style.opacity=this.checked?.3:1">
