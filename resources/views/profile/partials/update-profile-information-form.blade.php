@@ -5,36 +5,37 @@
 @endphp
 
 <section>
-    <header>
-        <h5 class="fw-semibold">{{ __('Profile Information') }}</h5>
-        <p class="text-muted mb-0" style="font-size: 0.875rem;">
-            {{ __("Update your account's profile information.") }}
-        </p>
-    </header>
+    <div class="pc-section-header pc-section-primary">
+        <i class="bi bi-person"></i>
+        <div>
+            <h6>{{ __('Profile Information') }}</h6>
+            <p>{{ __("Update your account's profile information.") }}</p>
+        </div>
+    </div>
 
     <form id="send-verification" method="post" action="{{ route('verification.send') }}">
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-4" enctype="multipart/form-data">
+    <form method="post" action="{{ route('profile.update') }}" class="mt-3" enctype="multipart/form-data">
         @csrf
         @method('patch')
 
         <!-- Profile Photo -->
-        <div class="mb-4 text-center">
-            <div class="mb-3">
+        <div class="mb-4 pc-photo-upload">
+            <div>
                 <img id="photo-preview"
                     @if ($user->profile_image)
                         src="{{ asset('storage/' . $user->profile_image) }}"
                     @else
-                        src="data:image/svg+xml;base64,{{ base64_encode('<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'96\' height=\'96\'><rect width=\'96\' height=\'96\' rx=\'48\' fill=\'%231a6b3c\'/><text x=\'48\' y=\'58\' text-anchor=\'middle\' fill=\'white\' font-size=\'36\' font-weight=\'bold\'>' . substr($user->name, 0, 1) . '</text></svg>') }}"
+                        src="data:image/svg+xml;base64,{{ base64_encode('<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'120\'><rect width=\'120\' height=\'120\' rx=\'60\' fill=\'%231a6b3c\'/><text x=\'60\' y=\'72\' text-anchor=\'middle\' fill=\'white\' font-size=\'44\' font-weight=\'bold\'>' . substr($user->name, 0, 1) . '</text></svg>') }}"
                     @endif
                     alt="{{ $user->name }}"
-                    class="rounded-circle" style="width:96px;height:96px;object-fit:cover;">
+                    class="rounded-circle pc-profile-avatar" style="width:120px;height:120px;object-fit:cover;">
             </div>
             <div>
-                <label for="profile_image" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-camera me-1"></i>{{ __('Change Photo') }}
+                <label for="profile_image" class="pc-photo-upload-btn">
+                    <i class="bi bi-camera"></i>{{ __('Change Photo') }}
                 </label>
                 <input type="file" id="profile_image" name="profile_image" accept="image/*" class="d-none"
                     onchange="if(this.files[0]) document.getElementById('photo-preview').src = window.URL.createObjectURL(this.files[0])">
@@ -44,9 +45,7 @@
             </div>
         </div>
 
-        <hr class="mb-4">
-
-        <h6 class="fw-semibold mb-3"><i class="bi bi-person me-1"></i>{{ __('Basic Information') }}</h6>
+        <h6 class="fw-semibold mb-3 mt-4"><i class="bi bi-person me-1"></i>{{ __('Basic Information') }}</h6>
 
         <div class="row g-3">
             <div class="col-md-6">
@@ -99,8 +98,13 @@
 
         {{-- ======================== VET FIELDS ======================== --}}
         @if ($isVet)
-            <hr class="my-4">
-            <h6 class="fw-semibold mb-3"><i class="bi bi-heart-pulse me-1"></i>{{ __('Veterinary Information') }}</h6>
+            <div class="pc-section-header pc-section-vet mt-4 mb-3">
+                <i class="bi bi-heart-pulse"></i>
+                <div>
+                    <h6>{{ __('Veterinary Information') }}</h6>
+                    <p>{{ __('Your professional details visible to pet owners.') }}</p>
+                </div>
+            </div>
 
             <div class="row g-3">
                 <div class="col-md-6">
@@ -205,8 +209,13 @@
 
         {{-- ======================== SHELTER FIELDS ======================== --}}
         @if ($isShelter)
-            <hr class="my-4">
-            <h6 class="fw-semibold mb-3"><i class="bi bi-house-heart me-1"></i>{{ __('Shelter Information') }}</h6>
+            <div class="pc-section-header pc-section-shelter mt-4 mb-3">
+                <i class="bi bi-house-heart"></i>
+                <div>
+                    <h6>{{ __('Shelter Information') }}</h6>
+                    <p>{{ __('Your shelter details visible to potential adopters.') }}</p>
+                </div>
+            </div>
 
             <div class="row g-3">
                 <div class="col-md-6">
@@ -300,7 +309,9 @@
         @endif
 
         <div class="d-flex align-items-center gap-3 mt-4">
-            <button type="submit" class="btn" style="background:#1a6b3c;color:#fff;">{{ __('Save Changes') }}</button>
+            <button type="submit" class="pc-btn-primary">
+                <i class="bi bi-check-lg"></i> {{ __('Save Changes') }}
+            </button>
 
             @if (session('status') === 'profile-updated')
                 <span
@@ -308,9 +319,8 @@
                     x-show="show"
                     x-transition
                     x-init="setTimeout(() => show = false, 2000)"
-                    class="text-success"
-                    style="font-size: 0.875rem;"
-                ><i class="bi bi-check-circle me-1"></i>{{ __('Saved.') }}</span>
+                    class="pc-saved-msg"
+                ><i class="bi bi-check-circle"></i> {{ __('Saved.') }}</span>
             @endif
         </div>
     </form>
