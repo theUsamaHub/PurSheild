@@ -12,8 +12,8 @@ body{min-height:100vh;display:flex;align-items:center;justify-content:center;bac
 .err-card{text-align:center;padding:48px 40px;max-width:460px;width:100%}
 .err-paw{margin-bottom:24px}
 .err-paw svg{width:72px;height:72px;filter:drop-shadow(0 4px 12px rgba(26,107,60,.15))}
-.err-code{font-size:120px;font-weight:800;line-height:1;color:#1a6b3c;opacity:.10;letter-spacing:-4px;margin-bottom:-30px;user-select:none}
-.err-icon{font-size:40px;color:#823aff;margin-bottom:16px;opacity:.85}
+.err-code{font-size:120px;font-weight:800;line-height:1;color:#1a6b3c;opacity:.10;letter-spacing:-4px;margin-bottom:0;user-select:none}
+.err-icon{font-size:40px;color:#823aff;margin-bottom:20px;opacity:.85}
 .err-title{font-size:22px;font-weight:700;color:#0a1648;margin-bottom:8px}
 .err-msg{font-size:15px;color:#52699b;line-height:1.6;margin-bottom:28px}
 .err-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#1a6b3c;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;transition:all .2s;border:0;cursor:pointer}
