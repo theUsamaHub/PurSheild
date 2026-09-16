@@ -21,7 +21,6 @@ body{min-height:100vh;display:flex;align-items:center;justify-content:center;bac
 .err-links{margin-top:20px;display:flex;gap:20px;justify-content:center}
 .err-links a{color:#52699b;text-decoration:none;font-size:13px;font-weight:500;transition:color .2s}
 .err-links a:hover{color:#1a6b3c}
-.err-divider{width:40px;height:3px;background:linear-gradient(90deg,#f59e0b,#fbbf24);border-radius:2px;margin:0 auto 20px}
 </style>
 </head>
 <body>
@@ -30,7 +29,6 @@ body{min-height:100vh;display:flex;align-items:center;justify-content:center;bac
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="#1a6b3c"><ellipse cx="11" cy="17" rx="5.5" ry="7.5" transform="rotate(-25 11 17)"/><ellipse cx="21" cy="9" rx="5.5" ry="7.5" transform="rotate(-8 21 9)"/><ellipse cx="33" cy="10" rx="5.5" ry="7.5" transform="rotate(15 33 10)"/><ellipse cx="41" cy="22" rx="5.5" ry="7.5" transform="rotate(30 41 22)"/><path d="M10 36c0-5 6-8 9-13 3-5 8-5 11 0 3 5 9 9 9 14 0 6-5 8-10 6-5-2-7-2-11 0-5 2-8-1-8-7z"/></svg>
 </div>
 <div class="err-code">403</div>
-<div class="err-divider"></div>
 <div class="err-icon"><i class="bi bi-shield-lock"></i></div>
 <h1 class="err-title">Access Denied</h1>
 <p class="err-msg">You don't have permission to access this area. If you believe this is a mistake, please contact your administrator for help.</p>
