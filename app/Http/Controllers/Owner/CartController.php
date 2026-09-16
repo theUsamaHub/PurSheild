@@ -129,7 +129,7 @@ class CartController extends Controller
 
         $order = DB::transaction(function () use ($cart) {
             $totalAmount = $cart->items->sum(function ($item) {
-                return $item->price * $item->quantity;
+                return $item->product->effective_price * $item->quantity;
             });
 
             $order = Order::create([
@@ -146,7 +146,7 @@ class CartController extends Controller
                     'order_id' => $order->id,
                     'product_id' => $item->product_id,
                     'quantity' => $item->quantity,
-                    'price_each' => $item->price,
+                    'price_each' => $item->product->effective_price,
                 ]);
 
                 Product::where('id', $item->product_id)

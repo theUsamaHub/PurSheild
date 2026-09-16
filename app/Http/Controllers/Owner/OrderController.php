@@ -12,12 +12,23 @@ class OrderController extends Controller
 {
     public function index(): View
     {
+        $ownerId = Auth::id();
         $orders = Order::with(['items.product'])
-            ->where('owner_id', Auth::id())
+            ->where('owner_id', $ownerId)
             ->latest('order_date')
             ->paginate(15);
 
-        return view('owner.orders.index', compact('orders'));
+        $base = Order::where('owner_id', $ownerId);
+        $stats = [
+            'total'      => (clone $base)->count(),
+            'placed'     => (clone $base)->where('status', 'placed')->count(),
+            'processing' => (clone $base)->where('status', 'processing')->count(),
+            'completed'  => (clone $base)->where('status', 'completed')->count(),
+            'cancelled'  => (clone $base)->where('status', 'cancelled')->count(),
+            'spent'      => (clone $base)->where('status', 'completed')->sum('total_amount'),
+        ];
+
+        return view('owner.orders.index', compact('orders', 'stats'));
     }
 
     public function show(Order $order): View
