@@ -221,23 +221,20 @@ $storageUrl=fn($path)=>$path?\Illuminate\Support\Facades\Storage::disk('public')
 @push('scripts')
 <script>
 (function(){
-var urls=@js($sortedImages->map(fn($img)=>\Illuminate\Support\Facades\Storage::disk('public')->url($img->image_path))->filter()->values()->toArray());
+var urls=[];document.querySelectorAll('.pet-photo-hero img, .pet-thumb').forEach(function(el){if(el.src&&urls.indexOf(el.src)===-1)urls.push(el.src);});
+if(urls.length===0)document.querySelectorAll('[data-pet-img]').forEach(function(el){urls.push(el.getAttribute('data-pet-img'));});
 var current=0;
 var lb=document.getElementById('petLightbox');
 var lbImg=document.getElementById('lbImg');
 var lbCounter=document.getElementById('lbCounter');
 var lbPrev=document.getElementById('lbPrev');
 var lbNext=document.getElementById('lbNext');
-function updateLightbox(){lbImg.src=urls[current];lbCounter.textContent=(current+1)+' / '+urls.length;lbPrev.style.display=urls.length>1?'flex':'none';lbNext.style.display=urls.length>1?'flex':'none';}
+function updateLightbox(){if(!urls.length)return;lbImg.src=urls[current];lbCounter.textContent=(current+1)+' / '+urls.length;lbPrev.style.display=urls.length>1?'flex':'none';lbNext.style.display=urls.length>1?'flex':'none';}
 window.openPetLightbox=function(i){current=i;updateLightbox();lb.classList.add('is-open');document.body.style.overflow='hidden';};
 window.closePetLightbox=function(){lb.classList.remove('is-open');document.body.style.overflow='';};
-window.navPetLightbox=function(d){current=(current+d+urls.length)%urls.length;updateLightbox();};
-window.switchPetImage=function(i){current=i;var hero=document.querySelector('.pet-photo-hero img');if(hero)hero.src=urls[i];document.querySelectorAll('.pet-thumb').forEach(function(t,idx){t.classList.toggle('active',idx===i);});};
-document.addEventListener('keydown',function(e){if(!lb.classList.contains('is-open'))return;if(e.key==='Escape')closePetLightbox();if(e.key==='ArrowLeft')navPetLightbox(-1);if(e.key==='ArrowRight')navPetLightbox(1);});
-var heroImg=document.querySelector('.pet-photo-hero img');
-if(heroImg&&urls.length>0)heroImg.src=urls[0];
-var thumbs=document.querySelectorAll('.pet-thumb');
-if(thumbs.length>0)thumbs[0].classList.add('active');
+window.navPetLightbox=function(d){if(!urls.length)return;current=(current+d+urls.length)%urls.length;updateLightbox();};
+window.switchPetImage=function(i){current=i;var hero=document.querySelector('.pet-photo-hero img');if(hero&&urls[i])hero.src=urls[i];document.querySelectorAll('.pet-thumb').forEach(function(t,idx){t.classList.toggle('active',idx===i);});};
+document.addEventListener('keydown',function(e){if(!lb||!lb.classList.contains('is-open'))return;if(e.key==='Escape')closePetLightbox();if(e.key==='ArrowLeft')navPetLightbox(-1);if(e.key==='ArrowRight')navPetLightbox(1);});
 })();
 </script>
 @endpush
