@@ -35,15 +35,15 @@
 
                         <div class="mb-3">
                             <x-input-label for="description" :value="__('Description')" />
-                            <textarea id="description" name="description" class="form-control @error('description') is-invalid @enderror" rows="5">{{ old('description', $product->description) }}</textarea>
+                            <x-tinymce name="description" :height="350">{{ old('description', $product->description) }}</x-tinymce>
                             <x-input-error :messages="$errors->get('description')" class="mt-1" />
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <x-input-label for="sku" :value="__('SKU')" />
-                                <x-text-input id="sku" name="sku" type="text" class="form-control" :value="old('sku', $product->sku)" />
-                                <x-input-error :messages="$errors->get('sku')" class="mt-1" />
+                                <x-text-input id="sku" name="sku" type="text" class="form-control" :value="old('sku', $product->sku)" readonly disabled />
+                                <small class="text-muted">{{ __('Auto-generated. Cannot be changed.') }}</small>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <x-input-label for="price" :value="__('Price') . ' (*)'" />
@@ -53,11 +53,29 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
+                                <x-input-label for="special_price" :value="__('Special Price')" />
+                                <x-text-input id="special_price" name="special_price" type="number" class="form-control" :value="old('special_price', $product->special_price)" step="0.01" min="0" />
+                                <small class="text-muted">{{ __('Discounted price. Must be less than original price.') }}</small>
+                                <x-input-error :messages="$errors->get('special_price')" class="mt-1" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <x-input-label for="discount_percent" :value="__('Discount %')" />
+                                <div class="input-group">
+                                    <x-text-input id="discount_percent" name="discount_percent" type="number" class="form-control" :value="old('discount_percent', $product->discount_percent)" step="0.01" min="0" max="100" />
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <small class="text-muted">{{ __('Auto-calculates special price.') }}</small>
+                                <x-input-error :messages="$errors->get('discount_percent')" class="mt-1" />
+                            </div>
+                            <div class="col-md-4 mb-3">
                                 <x-input-label for="stock_quantity" :value="__('Stock Quantity') . ' (*)'" />
                                 <x-text-input id="stock_quantity" name="stock_quantity" type="number" class="form-control" :value="old('stock_quantity', $product->stock_quantity)" min="0" required />
                                 <x-input-error :messages="$errors->get('stock_quantity')" class="mt-1" />
                             </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 <x-input-label for="weight" :value="__('Weight (kg)')" />
                                 <x-text-input id="weight" name="weight" type="number" class="form-control" :value="old('weight', $product->weight)" step="0.01" min="0" />
@@ -74,6 +92,20 @@
                                 @endforeach
                             </select>
                             <x-input-error :messages="$errors->get('category_id')" class="mt-1" />
+                        </div>
+
+                        <div class="mb-3">
+                            <x-input-label for="sku_template_id" :value="__('SKU Template')" />
+                            <select id="sku_template_id" name="sku_template_id" class="form-select @error('sku_template_id') is-invalid @enderror">
+                                <option value="">{{ __('Auto-generate SKU (default)') }}</option>
+                                @foreach ($skuTemplates as $template)
+                                    <option value="{{ $template->id }}" {{ old('sku_template_id', $product->sku_template_id) == $template->id ? 'selected' : '' }}>
+                                        {{ $template->name }} — <code>{{ $template->pattern }}</code>
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">{{ __('Choose a pattern to auto-generate SKU, or leave blank for default.') }}</small>
+                            <x-input-error :messages="$errors->get('sku_template_id')" class="mt-1" />
                         </div>
 
                         <div class="mb-3">
@@ -179,6 +211,38 @@
 
     @push('scripts')
     <script>
+        const priceInput = document.getElementById('price');
+        const specialPriceInput = document.getElementById('special_price');
+        const discountInput = document.getElementById('discount_percent');
+
+        priceInput.addEventListener('input', function() {
+            if (discountInput.value && !specialPriceInput.value) {
+                const price = parseFloat(priceInput.value) || 0;
+                const disc = parseFloat(discountInput.value) || 0;
+                specialPriceInput.value = (price - (price * disc / 100)).toFixed(2);
+            }
+        });
+
+        specialPriceInput.addEventListener('input', function() {
+            const price = parseFloat(priceInput.value) || 0;
+            const special = parseFloat(specialPriceInput.value) || 0;
+            if (price > 0 && special > 0 && special < price) {
+                discountInput.value = ((1 - special / price) * 100).toFixed(2);
+            } else {
+                discountInput.value = '';
+            }
+        });
+
+        discountInput.addEventListener('input', function() {
+            const price = parseFloat(priceInput.value) || 0;
+            const disc = parseFloat(discountInput.value) || 0;
+            if (price > 0 && disc > 0) {
+                specialPriceInput.value = (price - (price * disc / 100)).toFixed(2);
+            } else {
+                specialPriceInput.value = '';
+            }
+        });
+
         function setPrimary(el, imageId) {
             document.querySelectorAll('input[name="primary_image_id"]').forEach(function(radio) {
                 radio.checked = false;

@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="mb-4">
-        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center">
             <h2 class="h4 mb-0 fw-semibold">{{ __('Products') }}</h2>
             <a href="{{ route('admin.products.create') }}" class="btn btn-primary btn-sm">
                 <i class="bi bi-plus-circle me-1"></i>{{ __('Add Product') }}
@@ -12,7 +12,7 @@
 
     <!-- Stats -->
     <div class="row g-3 mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card border-start border-primary border-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -25,7 +25,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card border-start border-success border-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -38,7 +38,20 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
+            <div class="card border-start border-secondary border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted mb-1" style="font-size:0.8rem;">{{ __('Inactive') }}</div>
+                            <div class="fw-bold fs-4">{{ $stats['inactive'] }}</div>
+                        </div>
+                        <i class="bi bi-pause-circle text-secondary" style="font-size:2rem;opacity:0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
             <div class="card border-start border-danger border-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -54,35 +67,55 @@
     </div>
 
     <!-- Filters -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="GET" action="{{ route('admin.products.index') }}" class="row g-3">
-                <div class="col-md-4">
-                    <input type="text" class="form-control" name="search" placeholder="{{ __('Search by name, SKU...') }}" value="{{ request('search') }}">
+    <form method="GET" action="{{ route('admin.products.index') }}">
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" name="search" placeholder="{{ __('Search by name, SKU...') }}" value="{{ request('search') }}">
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" name="category_id">
+                            <option value="">{{ __('All Categories') }}</option>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" name="status">
+                            <option value="">{{ __('All Status') }}</option>
+                            <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>{{ __('Active') }}</option>
+                            <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>{{ __('Inactive') }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-search me-1"></i>{{ __('Filter') }}
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <div id="bulk-actions" class="d-none">
+                            <div class="btn-group btn-group-sm w-100">
+                                <button type="button" class="btn btn-outline-success" onclick="submitBulk('activate')">
+                                    <i class="bi bi-check-circle me-1"></i>{{ __('Activate') }}
+                                </button>
+                                <button type="button" class="btn btn-outline-warning" onclick="submitBulk('deactivate')">
+                                    <i class="bi bi-pause-circle me-1"></i>{{ __('Deactivate') }}
+                                </button>
+                                <button type="button" class="btn btn-outline-danger" onclick="submitBulk('delete')">
+                                    <i class="bi bi-trash me-1"></i>{{ __('Delete') }}
+                                </button>
+                            </div>
+                        </div>
+                        <div id="bulk-count" class="d-none">
+                            <small class="text-muted"><span id="selected-count">0</span> {{ __('selected') }}</small>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <select class="form-select" name="category_id">
-                        <option value="">{{ __('All Categories') }}</option>
-                        @foreach ($categories as $category)
-                            <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select" name="status">
-                        <option value="">{{ __('All Status') }}</option>
-                        <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>{{ __('Active') }}</option>
-                        <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>{{ __('Inactive') }}</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-outline-secondary w-100">
-                        <i class="bi bi-search me-1"></i>{{ __('Filter') }}
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
+    </form>
 
     <!-- Products Table -->
     <div class="card">
@@ -91,6 +124,9 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
+                            <th style="width:40px;">
+                                <input type="checkbox" class="form-check-input" id="select-all">
+                            </th>
                             <th style="width:50px;">{{ __('Image') }}</th>
                             <th>{{ __('Name') }}</th>
                             <th>{{ __('SKU') }}</th>
@@ -104,6 +140,9 @@
                     <tbody>
                         @forelse ($products as $product)
                             <tr>
+                                <td>
+                                    <input type="checkbox" class="form-check-input product-checkbox" value="{{ $product->id }}">
+                                </td>
                                 <td>
                                     @php $primaryImage = $product->images->where('is_primary', true)->first() ?? $product->images->first(); @endphp
                                     @if ($primaryImage)
@@ -159,7 +198,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-5">
+                                <td colspan="9" class="text-center py-5">
                                     <div class="empty-state">
                                         <i class="bi bi-box-seam" style="font-size:3rem;opacity:0.3;"></i>
                                         <p class="mt-2 text-muted">{{ __('No products found.') }}</p>
@@ -181,4 +220,74 @@
             </div>
         @endif
     </div>
+
+    @push('scripts')
+    <script>
+        const selectAll = document.getElementById('select-all');
+        const checkboxes = document.querySelectorAll('.product-checkbox');
+        const bulkActions = document.getElementById('bulk-actions');
+        const bulkCount = document.getElementById('bulk-count');
+        const selectedCount = document.getElementById('selected-count');
+
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => cb.checked = this.checked);
+            updateBulkUI();
+        });
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateBulkUI);
+        });
+
+        function updateBulkUI() {
+            const count = document.querySelectorAll('.product-checkbox:checked').length;
+            selectedCount.textContent = count;
+            if (count > 0) {
+                bulkActions.classList.remove('d-none');
+                bulkCount.classList.remove('d-none');
+            } else {
+                bulkActions.classList.add('d-none');
+                bulkCount.classList.add('d-none');
+            }
+        }
+
+        function submitBulk(action) {
+            const checked = document.querySelectorAll('.product-checkbox:checked');
+            if (checked.length === 0) {
+                alert('{{ __("Please select at least one product.") }}');
+                return;
+            }
+
+            if (action === 'delete' && !confirm('{{ __("Are you sure you want to delete the selected products?") }}')) {
+                return;
+            }
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route("admin.products.bulk-action") }}';
+
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '_token';
+            csrf.value = '{{ csrf_token() }}';
+            form.appendChild(csrf);
+
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = action;
+            form.appendChild(actionInput);
+
+            checked.forEach(function(cb) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'ids[]';
+                input.value = cb.value;
+                form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
+    @endpush
 @endsection

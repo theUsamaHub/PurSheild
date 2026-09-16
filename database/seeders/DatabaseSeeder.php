@@ -14,6 +14,9 @@ class DatabaseSeeder extends Seeder
         // 1. Roles (admin, owner, vet, shelter)
         $this->call(RoleSeeder::class);
 
+        // 1b. SKU Templates
+        $this->call(SkuTemplateSeeder::class);
+
         // 2. Species, Breeds, Specializations
         $this->call(SpeciesAndBreedsSeeder::class);
 

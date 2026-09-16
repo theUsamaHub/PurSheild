@@ -34,7 +34,12 @@
                             </tr>
                             <tr>
                                 <td class="fw-semibold">{{ __('SKU') }}</td>
-                                <td><code>{{ $product->sku ?: '-' }}</code></td>
+                                <td>
+                                    <code>{{ $product->sku ?: '-' }}</code>
+                                    @if ($product->skuTemplate)
+                                        <small class="text-muted ms-2">({{ $product->skuTemplate->name }}: <code>{{ $product->skuTemplate->pattern }}</code>)</small>
+                                    @endif
+                                </td>
                             </tr>
                             <tr>
                                 <td class="fw-semibold">{{ __('Category') }}</td>
@@ -46,7 +51,18 @@
                             </tr>
                             <tr>
                                 <td class="fw-semibold">{{ __('Price') }}</td>
-                                <td class="fw-bold text-success">{{ number_format($product->price, 2) }}</td>
+                                <td>
+                                    @if ($product->special_price && $product->special_price > 0)
+                                        <span class="text-decoration-line-through text-muted">{{ number_format($product->price, 2) }}</span>
+                                        <span class="fw-bold text-danger ms-2">{{ number_format($product->special_price, 2) }}</span>
+                                        @if ($product->discount_percent)
+                                            <span class="badge bg-danger ms-2">-{{ number_format($product->discount_percent, 0) }}%</span>
+                                        @endif
+                                        <br><small class="text-success">{{ __('You save: ') . number_format($product->price - $product->special_price, 2) }}</small>
+                                    @else
+                                        <span class="fw-bold text-success">{{ number_format($product->price, 2) }}</span>
+                                    @endif
+                                </td>
                             </tr>
                             <tr>
                                 <td class="fw-semibold">{{ __('Stock Quantity') }}</td>
@@ -79,8 +95,10 @@
                                 <td>
                                     @if ($product->status === 'active')
                                         <span class="badge bg-success">{{ __('Active') }}</span>
-                                    @else
+                                    @elseif ($product->status === 'inactive')
                                         <span class="badge bg-secondary">{{ __('Inactive') }}</span>
+                                    @else
+                                        <span class="badge bg-danger">{{ __('Out of Stock') }}</span>
                                     @endif
                                 </td>
                             </tr>

@@ -32,7 +32,7 @@ use Illuminate\Support\Facades\Schema;
  *    Vets/Shelters start as `pending` → can log in and complete profile →
  *    cannot appear in public listings until Admin sets `status = active`.
  *
- * 4. Soft deletes only where data loss is dangerous (categories).
+ * 4. Soft deletes only where data loss is dangerous (categories, products, care content).
  *    Hard deletes elsewhere to keep the schema clean for a competition build.
  *
  * 5. Polymorphic relationships for reviews and media (reusable across models).
@@ -40,7 +40,7 @@ use Illuminate\Support\Facades\Schema;
  *    attach to pets, products, adoption listings, or user profiles. Polymorphic
  *    avoids creating separate join tables for each combination.
  *
- * TABLE COUNT: 31 tables
+ * TABLE COUNT: 33 tables
  * SRS COMPLIANCE: Full coverage of all functional requirements
  * ============================================================================
  */
@@ -172,6 +172,7 @@ return new class extends Migration
         | - `consultation_fee` displayed to owners during appointment booking.
         |   SRS says "no payment" but owners need to see fees before booking.
         | - `profile_image` kept on users table (shared), not here.
+        | - `rejection_reason`/`rejected_at` — admin audit trail for rejected profiles.
         */
 
         Schema::create('vet_profiles', function (Blueprint $table) {
@@ -198,6 +199,10 @@ return new class extends Migration
             $table->timestamp('verified_at')->nullable();
             $table->foreignId('verified_by')->nullable()->constrained('users')->nullOnDelete();
 
+            // Rejection audit trail (admin rejects with reason)
+            $table->text('rejection_reason')->nullable();
+            $table->timestamp('rejected_at')->nullable();
+
             $table->timestamps();
         });
 
@@ -221,6 +226,7 @@ return new class extends Migration
         |   Same applies to shelters for map-based search.
         | - `capacity` — dashboard stat: how many animals the shelter can hold.
         | - `profile_image` kept on users table (shared), not here.
+        | - `rejection_reason`/`rejected_at` — admin audit trail for rejected profiles.
         */
 
         Schema::create('shelter_profiles', function (Blueprint $table) {
@@ -243,6 +249,10 @@ return new class extends Migration
             $table->boolean('is_verified')->default(false);
             $table->timestamp('verified_at')->nullable();
             $table->foreignId('verified_by')->nullable()->constrained('users')->nullOnDelete();
+
+            // Rejection audit trail (admin rejects with reason)
+            $table->text('rejection_reason')->nullable();
+            $table->timestamp('rejected_at')->nullable();
 
             // Dashboard stat + capacity check before creating listings
             $table->unsignedInteger('capacity')->nullable();
@@ -460,6 +470,8 @@ return new class extends Migration
         | - Polymorphic would be overkill here — pets are the only entity with
         |   a gallery. Dedicated table is simpler and faster.
         | - `caption` optional — owner can label images ("At the park", "After surgery").
+        | - `is_primary` — one image is the main/cover image for pet listings.
+        | - `sort_order` — controls display order in gallery.
         | - Cascade delete: removing a pet removes all its images.
         */
 
@@ -471,6 +483,8 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->string('image_path');
+            $table->boolean('is_primary')->default(false);
+            $table->unsignedInteger('sort_order')->default(0);
             $table->string('caption')->nullable();
 
             $table->timestamps();
@@ -573,6 +587,8 @@ return new class extends Migration
         | - Stores file references (path, name) not actual file content.
         | - `document_type` — categorizes files (e.g., "xray", "lab_report",
         |   "certificate", "prescription_image").
+        | - `mime_type` — stores the MIME type (e.g., "application/pdf", "image/jpeg")
+        |   for proper file handling on download/display.
         | - `health_record_id` nullable — document may exist without being linked
         |   to a specific health record (e.g., standalone certificate upload).
         | - `pet_id` required — every document belongs to a pet.
@@ -594,6 +610,7 @@ return new class extends Migration
 
             $table->string('file_name');
             $table->string('file_path');
+            $table->string('mime_type')->nullable();
 
             $table->text('description')->nullable();
 
@@ -836,7 +853,7 @@ return new class extends Migration
 
         /*
         |--------------------------------------------------------------------------
-        | 19. PRODUCT CATEGORIES
+        | 19. CATEGORIES (Product Categories — shared name with starter kit)
         |--------------------------------------------------------------------------
         |
         | SRS Reference: "View/Purchase Products — browse categories with filters."
@@ -893,13 +910,19 @@ return new class extends Migration
         | DESIGN DECISION:
         | - `slug` — SEO-friendly URLs (/products/premium-dog-food).
         | - `sku` — stock-keeping unit for inventory tracking (admin reference).
-        | - `price` — displayed to owners, stored in cart_items/order_items as snapshot.
+        |   Auto-generated from SKU template or random string if not provided.
+        | - `sku_template_id` — links to sku_templates table for pattern-based SKU generation.
+        | - `price` — original price displayed to owners.
+        | - `special_price` — discounted price (must be less than original price).
+        | - `discount_percent` — percentage off (0-100), auto-calculates special_price.
+        |   If special_price is set, discount_percent is auto-calculated and vice versa.
         | - `stock_quantity` — admin manages inventory. Product shows "out of stock"
         |   when quantity = 0.
         | - `is_featured` — for homepage featured products section.
         | - `meta_title`/`meta_description` — SEO fields (starter kit already has
         |   site-level SEO settings; product-level SEO is more granular).
         | - `created_by`/`updated_by` — audit trail.
+        | - `softDeletes` — products are soft-deleted to recycle bin for recovery.
         */
 
         Schema::create('products', function (Blueprint $table) {
@@ -909,12 +932,19 @@ return new class extends Migration
                 ->constrained('categories')
                 ->restrictOnDelete();
 
+            $table->foreignId('sku_template_id')
+                ->nullable()
+                ->constrained('sku_templates')
+                ->nullOnDelete();
+
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
 
             $table->string('sku')->unique()->nullable();
             $table->decimal('price', 10, 2);
+            $table->decimal('special_price', 10, 2)->nullable();
+            $table->decimal('discount_percent', 5, 2)->nullable();
             $table->unsignedInteger('stock_quantity')->default(0);
             $table->decimal('weight', 8, 2)->nullable();
 
@@ -931,6 +961,7 @@ return new class extends Migration
             ])->default('active');
 
             $table->timestamps();
+            $table->softDeletes();
 
             // Audit columns
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
@@ -943,7 +974,36 @@ return new class extends Migration
 
         /*
         |--------------------------------------------------------------------------
-        | 21. PRODUCT IMAGES
+        | 21. SKU TEMPLATES
+        |--------------------------------------------------------------------------
+        |
+        | Reference: Admin can define SKU generation patterns (e.g., PRD-{SLUG}-{####}).
+        | Products link to a template via `sku_template_id`. The template generates
+        | the SKU on product creation.
+        |
+        | DESIGN DECISION:
+        | - Pattern-based SKU generation with placeholders: {NAME}, {SLUG},
+        |   {CATEGORY}, {CAT_SLUG}, {ID}, {####} (auto-increment), {RANDOM},
+        |   {YEAR}, {MONTH}.
+        | - `is_active` — admin can disable templates without deleting.
+        | - `sort_order` — controls display order in product form dropdown.
+        */
+
+        Schema::create('sku_templates', function (Blueprint $table) {
+            $table->id();
+
+            $table->string('name');
+            $table->string('pattern'); // e.g. PRD-{SLUG}-{####}
+            $table->boolean('is_active')->default(true);
+            $table->integer('sort_order')->default(0);
+
+            $table->timestamps();
+        });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | 22. PRODUCT IMAGES
         |--------------------------------------------------------------------------
         |
         | SRS Reference: "View/Purchase Products — view product details."
@@ -973,7 +1033,7 @@ return new class extends Migration
 
         /*
         |--------------------------------------------------------------------------
-        | 22. CARTS
+        | 23. CARTS
         |--------------------------------------------------------------------------
         |
         | SRS Reference: "View/Purchase Products — add/remove/modify cart items."
@@ -1000,7 +1060,7 @@ return new class extends Migration
 
         /*
         |--------------------------------------------------------------------------
-        | 23. CART ITEMS
+        | 24. CART ITEMS
         |--------------------------------------------------------------------------
         |
         | SRS Reference: "add/remove/modify cart items."
@@ -1040,7 +1100,7 @@ return new class extends Migration
 
         /*
         |--------------------------------------------------------------------------
-        | 24. ORDERS
+        | 25. ORDERS
         |--------------------------------------------------------------------------
         |
         | SRS Constraint: "No payment gateway — cart/browse only, no checkout,
@@ -1051,11 +1111,10 @@ return new class extends Migration
         |   SRS says no payment — so orders are informational only.
         | - `order_number` — human-readable ID (e.g., "ORD-2026-0001") for
         |   easy reference in notifications and admin panel.
-        | - `shipping_address` — placeholder for future extensibility (SRS says
-        |   no delivery, but the field costs nothing and makes the schema ready
-        |   if requirements change).
+        | - `shipping_address` — taken from user's address at checkout.
         | - `status_history` JSON — tracks status transitions with timestamps
         |   (e.g., [{status: "placed", at: "..."}, {status: "processing", at: "..."}]).
+        | - Status flow: placed → processing → completed/cancelled.
         */
 
         Schema::create('orders', function (Blueprint $table) {
@@ -1094,7 +1153,7 @@ return new class extends Migration
 
         /*
         |--------------------------------------------------------------------------
-        | 25. ORDER ITEMS
+        | 26. ORDER ITEMS
         |--------------------------------------------------------------------------
         |
         | SRS Reference: "View/Purchase Products — cart/browse only."
@@ -1128,7 +1187,7 @@ return new class extends Migration
 
         /*
         |--------------------------------------------------------------------------
-        | 26. ADOPTION LISTINGS
+        | 27. ADOPTION LISTINGS
         |--------------------------------------------------------------------------
         |
         | SRS Reference: "Animal Shelter — list adoptable pets: images, age, breed,
@@ -1200,7 +1259,7 @@ return new class extends Migration
 
         /*
         |--------------------------------------------------------------------------
-        | 27. ADOPTION IMAGES
+        | 28. ADOPTION IMAGES
         |--------------------------------------------------------------------------
         |
         | SRS Reference: "list adoptable pets: images."
@@ -1226,7 +1285,7 @@ return new class extends Migration
 
         /*
         |--------------------------------------------------------------------------
-        | 28. ADOPTION APPLICATIONS
+        | 29. ADOPTION APPLICATIONS
         |--------------------------------------------------------------------------
         |
         | SRS Reference: "Coordinate with adopters: view interest forms, respond,
@@ -1238,6 +1297,9 @@ return new class extends Migration
         | - `message` — applicant's message to the shelter ("I have a big yard...").
         | - `shelter_response` — shelter's reply before approving/rejecting.
         | - `status` — pending → approved/rejected → completed (adoption finalized).
+        | - Enhanced fields for adoption suitability assessment: phone, address,
+        |   home_type, has_yard, living_situation, has_other_pets, has_children,
+        |   work_schedule, pet_experience, why_adopt.
         | - Composite indexes for fast queries: [listing_id, status] for shelter's
         |   inbox, [applicant_id, status] for owner's "my applications" view.
         */
@@ -1254,6 +1316,20 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->text('message')->nullable();
+
+            // Enhanced adoption suitability fields
+            $table->string('phone')->nullable();
+            $table->string('address')->nullable();
+            $table->string('home_type')->nullable(); // house, apartment, condo, etc.
+            $table->boolean('has_yard')->nullable();
+            $table->string('living_situation')->nullable(); // alone, partner, family, roommates
+            $table->boolean('has_other_pets')->nullable();
+            $table->text('other_pets_details')->nullable();
+            $table->boolean('has_children')->nullable();
+            $table->string('children_ages')->nullable();
+            $table->string('work_schedule')->nullable();
+            $table->text('pet_experience')->nullable();
+            $table->text('why_adopt')->nullable();
 
             $table->enum('status', [
                 'pending',
@@ -1280,7 +1356,50 @@ return new class extends Migration
 
         /*
         |--------------------------------------------------------------------------
-        | 29. CARE CONTENTS
+        | 30. CARE STATUS LOGS
+        |--------------------------------------------------------------------------
+        |
+        | SRS Reference: "Animal Shelter — care status logs for animals."
+        |
+        | DESIGN DECISION:
+        | - Tracks daily care activities (feeding, grooming, medical, other)
+        |   for shelter animals.
+        | - `shelter_id` → users (the shelter user logging the care).
+        | - `listing_id` nullable — can log care for animals not yet listed
+        |   for adoption.
+        | - `animal_name` — stores the animal name directly (not linked to pets
+        |   table because shelter animals may not have owner-created pet profiles).
+        | - `log_date` — date of the care activity, defaults to current date.
+        | - Composite indexes for fast shelter dashboard queries.
+        */
+
+        Schema::create('care_status_logs', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('shelter_id')
+                ->constrained('users')
+                ->cascadeOnDelete();
+
+            $table->foreignId('listing_id')
+                ->nullable()
+                ->constrained('adoption_listings')
+                ->nullOnDelete();
+
+            $table->string('animal_name');
+            $table->enum('type', ['feeding', 'grooming', 'medical', 'other']);
+            $table->text('notes');
+            $table->date('log_date')->useCurrent();
+
+            $table->timestamps();
+
+            $table->index(['shelter_id', 'log_date']);
+            $table->index(['shelter_id', 'type']);
+        });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | 31. CARE CONTENTS
         |--------------------------------------------------------------------------
         |
         | SRS Reference: "Access Care Options — categorized care content (feeding,
@@ -1296,6 +1415,7 @@ return new class extends Migration
         | - `media_url` — video URL or external link.
         | - `thumbnail` — preview image for listing pages.
         | - `status` — admin can publish/unpublish without deleting.
+        | - `softDeletes` — care content is soft-deleted to recycle bin for recovery.
         */
 
         Schema::create('care_contents', function (Blueprint $table) {
@@ -1328,12 +1448,13 @@ return new class extends Migration
             ])->default('active');
 
             $table->timestamps();
+            $table->softDeletes();
         });
 
 
         /*
         |--------------------------------------------------------------------------
-        | 30. NOTIFICATIONS
+        | 32. NOTIFICATIONS
         |--------------------------------------------------------------------------
         |
         | SRS Reference: "Notifications — shared table, applies to all 4 roles."
@@ -1378,7 +1499,7 @@ return new class extends Migration
 
         /*
         |--------------------------------------------------------------------------
-        | 31. REVIEWS
+        | 33. REVIEWS
         |--------------------------------------------------------------------------
         |
         | SRS Reference: "Ratings & Reviews — owners rate vets/shelters/products;
@@ -1389,13 +1510,14 @@ return new class extends Migration
         |   and products. `reviewable_type` + `reviewable_id` point to the target.
         | - `rating` — 1-5 scale (tiny integer, max value 5).
         | - `comment` — optional text review.
+        | - `reply` — vet/shelter/admin reply to the review.
+        | - `replied_at` — timestamp of when the reply was added.
+        | - `status` — moderation status: published (default), hidden, flagged.
         | - `user_id` — the reviewer. One user can leave multiple reviews but only
         |   one per target (enforced at application level, not DB unique constraint
         |   because polymorphic unique constraints are complex in PostgreSQL).
         | - Admin moderation handled at application level (admin can hide/delete
-        |   reviews from the admin panel). No `is_flagged` column — moderation
-        |   is done through the admin review management page, not a flagging system.
-        |   This keeps the schema simple for a competition build.
+        |   reviews from the admin panel).
         */
 
         Schema::create('reviews', function (Blueprint $table) {
@@ -1412,6 +1534,13 @@ return new class extends Migration
             $table->unsignedTinyInteger('rating');  // 1-5
 
             $table->text('comment')->nullable();
+
+            // Reply system (vet/shelter/admin can reply)
+            $table->text('reply')->nullable();
+            $table->timestamp('replied_at')->nullable();
+
+            // Moderation status
+            $table->string('status')->default('published');
 
             $table->timestamps();
 
@@ -1435,6 +1564,7 @@ return new class extends Migration
         Schema::dropIfExists('reviews');
         Schema::dropIfExists('notifications');
         Schema::dropIfExists('care_contents');
+        Schema::dropIfExists('care_status_logs');
 
         Schema::dropIfExists('adoption_applications');
         Schema::dropIfExists('adoption_images');
@@ -1447,6 +1577,7 @@ return new class extends Migration
         Schema::dropIfExists('carts');
 
         Schema::dropIfExists('product_images');
+        Schema::dropIfExists('sku_templates');
         Schema::dropIfExists('products');
         Schema::dropIfExists('categories');
 

@@ -40,6 +40,8 @@
             </li>
             <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.products.*') ? 'active' : '' }}" href="{{ route('admin.products.index') }}"><i class="bi bi-box-seam"></i> {{ __('Products') }}</a></li>
             <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.product-categories.*') ? 'active' : '' }}" href="{{ route('admin.product-categories.index') }}"><i class="bi bi-grid"></i> {{ __('Product Categories') }}</a></li>
+            <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}" href="{{ route('admin.orders.index') }}"><i class="bi bi-bag"></i> {{ __('Orders') }}</a></li>
+            <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.sku-templates.*') ? 'active' : '' }}" href="{{ route('admin.sku-templates.index') }}"><i class="bi bi-upc-scan"></i> {{ __('SKU Templates') }}</a></li>
             <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.care-content.*') ? 'active' : '' }}" href="{{ route('admin.care-content.index') }}"><i class="bi bi-journal-richtext"></i> {{ __('Care Content') }}</a></li>
 
             <li class="nav-item mt-2">
@@ -64,12 +66,23 @@
                 <small class="text-uppercase text-secondary px-3 fw-semibold" style="font-size:0.7rem;letter-spacing:0.05em;">{{ __('System') }}</small>
             </li>
             <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}" href="{{ route('admin.notifications.index') }}"><i class="bi bi-bell"></i> {{ __('Notifications') }} @php $nc = cache()->remember('notifications.unread.' . auth()->id(), 60, fn() => auth()->user()->unreadNotifications()->count()); @endphp @if($nc > 0)<span class="badge bg-danger ms-1">{{ $nc }}</span>@endif</a></li>
+            <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.subscribers.*') ? 'active' : '' }}" href="{{ route('admin.subscribers.index') }}"><i class="bi bi-envelope-check"></i> {{ __('Subscribers') }}</a></li>
+            <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.media.*') ? 'active' : '' }}" href="{{ route('admin.media.index') }}"><i class="bi bi-folder"></i> {{ __('Media') }}</a></li>
+            <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" href="{{ route('admin.settings.index') }}"><i class="bi bi-gear"></i> {{ __('Settings') }}</a></li>
             <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.activity-logs.*') ? 'active' : '' }}" href="{{ route('admin.activity-logs.index') }}"><i class="bi bi-clock-history"></i> {{ __('Activity') }}</a></li>
+            <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.ip-restrictions.*') ? 'active' : '' }}" href="{{ route('admin.ip-restrictions.index') }}"><i class="bi bi-shield-lock"></i> {{ __('IP Restrictions') }}</a></li>
             <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.sessions.*') ? 'active' : '' }}" href="{{ route('admin.sessions.index') }}"><i class="bi bi-person-badge"></i> {{ __('Sessions') }}</a></li>
             <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.maintenance.*') ? 'active' : '' }}" href="{{ route('admin.maintenance.index') }}"><i class="bi bi-shield-exclamation"></i> {{ __('Maintenance') }}</a></li>
             <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.health.*') ? 'active' : '' }}" href="{{ route('admin.health.index') }}"><i class="bi bi-heart-pulse"></i> {{ __('Health') }}</a></li>
             <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.logs.*') ? 'active' : '' }}" href="{{ route('admin.logs.index') }}"><i class="bi bi-journal-text"></i> {{ __('Logs') }}</a></li>
             <li class="nav-item"><a class="nav-link {{ request()->routeIs('admin.backup.*') ? 'active' : '' }}" href="{{ route('admin.backup.index') }}"><i class="bi bi-database"></i> {{ __('Backup') }}</a></li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('admin.trash.*') ? 'active' : '' }}" href="{{ route('admin.trash.index') }}">
+                    <i class="bi bi-trash"></i> {{ __('Recycle Bin') }}
+                    @php $tc = cache()->remember('trash.count', 60, fn() => \App\Models\Product::onlyTrashed()->count() + \App\Models\Category::onlyTrashed()->count() + \App\Models\CareContent::onlyTrashed()->count()); @endphp
+                    @if ($tc > 0)<span class="badge bg-danger ms-1">{{ $tc }}</span>@endif
+                </a>
+            </li>
         </ul>
     </nav>
 
