@@ -29,7 +29,15 @@ class ProductController extends Controller
         $products = $query->latest()->paginate(15);
         $categories = Category::orderBy('name')->get();
 
-        return view('owner.products.index', compact('products', 'categories'));
+        $activeQuery = Product::where('status', 'active');
+        $stats = [
+            'total'      => (clone $activeQuery)->count(),
+            'in_stock'   => (clone $activeQuery)->where('stock_quantity', '>', 0)->count(),
+            'out_stock'  => (clone $activeQuery)->where('stock_quantity', '<=', 0)->count(),
+            'on_sale'    => (clone $activeQuery)->whereNotNull('special_price')->where('special_price', '>', 0)->count(),
+        ];
+
+        return view('owner.products.index', compact('products', 'categories', 'stats'));
     }
 
     public function show(Product $product): View

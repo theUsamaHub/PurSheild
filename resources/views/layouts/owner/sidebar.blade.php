@@ -9,7 +9,8 @@
  ['vet','Find Veterinarians',route('owner.browse-vets'),request()->routeIs('owner.browse-vets*')],
  ['dashboard','Adopt a Pet',route('owner.browse-adoption'),request()->routeIs('owner.browse-adoption','owner.adoption.*')],
  ['lightbulb-fill','Pet Care',route('owner.care.index'),request()->routeIs('owner.care.*')],
- ['cart-fill','Products / Shop',route('owner.products.index'),request()->routeIs('owner.products.*','owner.cart.*','owner.orders.*')],
+ ['cart-fill','Products / Shop',route('owner.products.index'),request()->routeIs('owner.products.*','owner.cart.*')],
+ ['receipt','My Orders',route('owner.orders.index'),request()->routeIs('owner.orders.*')],
  ['notifications','Notifications',route('owner.dashboard',['panel'=>'notifications']),request('panel')==='notifications'],
  ['person-fill','My Profile',route('profile.edit'),request()->routeIs('profile.*')]
 ] as [$icon,$label,$url,$active])<a href="{{ $url }}" class="{{ $active?'active':'' }}" @if($active) aria-current="page" @endif><span class="op-nav-icon">@include('owner.partials.icon',['name'=>$icon])@if($label==='Notifications'&&$ownerUnread)<b>{{ $ownerUnread }}</b>@endif</span><span>{{ $label }}</span></a>@endforeach
