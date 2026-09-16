@@ -173,11 +173,11 @@
                     <i class="bi bi-list"></i>
                 </button>
 
-                <form class="pc-search" action="{{ route('vet.appointments.index') }}" method="GET" role="search">
+                <div class="pc-search" onclick="window.dispatchEvent(new Event('toggle-command-palette'))" style="cursor:pointer;">
                     <i class="bi bi-search"></i>
-                    <input type="search" name="search" placeholder="{{ __('Search appointments, pets, owners...') }}" value="{{ request('search') }}">
+                    <input type="text" readonly placeholder="{{ __('Search pages... (Ctrl+K)') }}" style="cursor:pointer;">
                     <kbd>Ctrl+K</kbd>
-                </form>
+                </div>
 
                 <div class="pc-topbar-right">
                     <a href="{{ route('vet.notifications.index') }}" class="pc-bell">
