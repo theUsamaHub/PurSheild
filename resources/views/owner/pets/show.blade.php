@@ -3,10 +3,10 @@
 @push('styles')
 @include('owner.partials.discovery-styles')
 <style>
-.pet-photo-hero{position:relative;width:100%;aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:#f0f7f4;cursor:zoom-in;}
-.pet-photo-hero img{width:100%;height:100%;object-fit:cover;display:block;}
+.pet-photo-hero{position:relative;width:100%;max-height:420px;border-radius:10px;overflow:hidden;background:#f0f7f4;cursor:zoom-in;}
+.pet-photo-hero img{width:100%;max-height:420px;object-fit:contain;display:block;background:#f6f9fc;}
 .pet-photo-hero:hover img{opacity:.92;}
-.pet-photo-hero .pet-initials{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#e2f5ed,#f3fdfa);font-size:64px;font-weight:700;color:#00865e;}
+.pet-photo-hero .pet-initials{width:100%;height:280px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#e2f5ed,#f3fdfa);font-size:64px;font-weight:700;color:#00865e;}
 .pet-thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
 .pet-thumb{width:60px;height:60px;border-radius:6px;object-fit:cover;border:2px solid transparent;cursor:pointer;opacity:.6;transition:border-color .15s,opacity .15s;}
 .pet-thumb:hover,.pet-thumb.active{border-color:#00865e;opacity:1;}
@@ -52,12 +52,13 @@ $imageUrls=$sortedImages->map(fn($img)=>petImageUrl($img->image_path))->filter()
 <div>
 
  {{-- Pet Photo --}}
-<section class="od-section" x-data="{}" style="margin-bottom:12px;">
+<section class="od-section" style="margin-bottom:12px;">
 @if($sortedImages->count()>0)
 <div>
     <div class="pet-photo-hero">
         @if($primaryImage)
-        <img :src="images[current]" alt="{{ $pet->name }}" @click="open(current)" loading="lazy">
+        <img src="{{ petImageUrl($primaryImage->image_path) }}" :src="images[current]" alt="{{ $pet->name }}" @click="open(current)" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="pet-initials" style="display:none;">{{ mb_strtoupper(mb_substr($pet->name,0,1)) }}</div>
         @else
         <div class="pet-initials">{{ mb_strtoupper(mb_substr($pet->name,0,1)) }}</div>
         @endif
