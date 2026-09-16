@@ -3,6 +3,19 @@
 @push('styles')
 @include('owner.partials.discovery-styles')
 <style>
+.pet-photo-hero{position:relative;width:100%;aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:#f0f7f4;cursor:zoom-in;}
+.pet-photo-hero img{width:100%;height:100%;object-fit:cover;display:block;}
+.pet-photo-hero:hover img{opacity:.92;}
+.pet-photo-hero .pet-initials{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#e2f5ed,#f3fdfa);font-size:64px;font-weight:700;color:#00865e;}
+.pet-thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.pet-thumb{width:60px;height:60px;border-radius:6px;object-fit:cover;border:2px solid transparent;cursor:pointer;opacity:.6;transition:border-color .15s,opacity .15s;}
+.pet-thumb:hover,.pet-thumb.active{border-color:#00865e;opacity:1;}
+.pet-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.pet-info-item{padding:10px 0;border-bottom:1px solid #edf2f7;}
+.pet-info-item:nth-child(odd){padding-right:16px;}
+.pet-info-item:nth-child(even){padding-left:16px;}
+.pet-info-label{font-size:11px;color:#52699b;margin-bottom:3px;}
+.pet-info-value{font-size:13px;font-weight:600;color:#0a1648;}
 .od-lightbox{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s ease;}
 .od-lightbox.is-open{opacity:1;pointer-events:auto;}
 .od-lightbox img{max-width:92vw;max-height:88vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.45);object-fit:contain;}
@@ -13,43 +26,58 @@
 .od-lightbox-prev{left:16px;}
 .od-lightbox-next{right:16px;}
 .od-lightbox-counter{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.7);font-size:13px;font-weight:500;}
-.od-pet-main-img{width:100%;max-height:380px;border-radius:8px;object-fit:cover;background:#f6f9fc;cursor:zoom-in;}
-.od-pet-main-img:hover{opacity:.92;}
-.od-pet-thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
-.od-pet-thumb{width:64px;height:64px;border-radius:6px;object-fit:cover;border:2px solid transparent;cursor:pointer;opacity:.6;transition:border-color .15s,opacity .15s;}
-.od-pet-thumb:hover,.od-pet-thumb.is-active{border-color:#00865e;opacity:1;}
 </style>
 @endpush
 @section('content')
 @php
-$primaryImage=$pet->images->firstWhere('is_primary')??$pet->images->first();
+function petImageUrl($path){
+    if(!$path) return null;
+    if(preg_match('~^https?://~i',$path)) return $path;
+    return \Illuminate\Support\Facades\Storage::disk('public')->url($path);
+}
+$primaryImage=$pet->images->sortByDesc('is_primary')->sortBy('sort_order')->first();
 $sortedImages=$pet->images->sortBy('sort_order')->values();
-$imageUrls=$sortedImages->map(fn($img)=>asset('storage/'.$img->image_path))->toArray();
+$imageUrls=$sortedImages->map(fn($img)=>petImageUrl($img->image_path))->filter()->toArray();
 @endphp
 <div class="od-page">
 <div class="op-breadcrumb"><a href="{{ route('owner.dashboard') }}"><i class="bi bi-house-door-fill"></i> Dashboard</a><i class="bi bi-chevron-right"></i><a href="{{ route('owner.pets.index') }}">My Pets</a><i class="bi bi-chevron-right"></i><span>{{ $pet->name }}</span></div>
-<div class="od-layout"><div x-data="petLightbox()">
-<div class="op-heading"><div><h1>@include('owner.partials.icon',['name'=>'paw']) {{ $pet->name }}</h1><p>{{ $pet->species->name??'' }}{{ $pet->breed?' · '.$pet->breed->name:'' }}</p></div><div style="display:flex;gap:8px;"><a class="op-button" href="{{ route('owner.pets.index') }}"><i class="bi bi-arrow-left"></i> Back</a><a class="op-button op-primary" href="{{ route('owner.pets.edit',$pet) }}"><i class="bi bi-pencil"></i> Edit</a></div></div>
 
-{{-- Pet Photo --}}
-<section class="od-section" style="margin-bottom:12px;">
+<div class="op-heading">
+    <div><h1>@include('owner.partials.icon',['name'=>'paw']) {{ $pet->name }}</h1>
+    <p>{{ $pet->species->name??'' }}{{ $pet->breed?' · '.$pet->breed->name:'' }} @if($pet->gender) · {{ ucfirst($pet->gender) }} @endif @if($pet->date_of_birth) · @include('owner.partials.age',['pet'=>$pet]) @endif</p></div>
+    <div style="display:flex;gap:8px;"><a class="op-button" href="{{ route('owner.pets.index') }}"><i class="bi bi-arrow-left"></i> Back</a><a class="op-button op-primary" href="{{ route('owner.pets.edit',$pet) }}"><i class="bi bi-pencil"></i> Edit</a></div>
+</div>
+
+<div class="od-layout" x-data="petLightbox()">
+<div>
+
+ {{-- Pet Photo --}}
+<section class="od-section" x-data="{}" style="margin-bottom:12px;">
 @if($sortedImages->count()>0)
 <div>
-<img class="od-pet-main-img" :src="images[current]" alt="{{ $pet->name }}" @click="open(current)" loading="lazy">
-@if($sortedImages->count()>1)
-<div class="od-pet-thumbs">
-@foreach($sortedImages as $idx=>$image)
-<img class="od-pet-thumb" :class="{'is-active':current==={{ $idx }}}" src="{{ asset('storage/'.$image->image_path) }}" alt="{{ $pet->name }}" @click="current={{ $idx }}" loading="lazy">
-@endforeach
-</div>
-@endif
+    <div class="pet-photo-hero">
+        @if($primaryImage)
+        <img :src="images[current]" alt="{{ $pet->name }}" @click="open(current)" loading="lazy">
+        @else
+        <div class="pet-initials">{{ mb_strtoupper(mb_substr($pet->name,0,1)) }}</div>
+        @endif
+    </div>
+    @if($sortedImages->count()>1)
+    <div class="pet-thumbs">
+    @foreach($sortedImages as $idx=>$image)
+    <img class="pet-thumb" :class="{'active':current==={{ $idx }}}" src="{{ petImageUrl($image->image_path) }}" alt="{{ $pet->name }} photo {{ $idx+1 }}" @click="current={{ $idx }}" loading="lazy">
+    @endforeach
+    </div>
+    @endif
 </div>
 @else
-<div style="text-align:center;padding:60px;background:linear-gradient(135deg,#e9fbf4,#f3fdfa);border-radius:8px;">
-<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#00865e,#27bd96);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:2rem;font-weight:700;">{{ mb_substr($pet->name,0,1) }}</div>
-<p style="margin:10px 0 0;font-size:12px;color:#99a8c2;">No photos uploaded</p>
+<div style="text-align:center;padding:50px;background:linear-gradient(135deg,#e9fbf4,#f3fdfa);border-radius:8px;">
+    <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#00865e,#27bd96);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:2rem;font-weight:700;">{{ mb_strtoupper(mb_substr($pet->name,0,1)) }}</div>
+    <p style="margin:10px 0 0;font-size:12px;color:#99a8c2;">No photos uploaded yet</p>
+    <a class="op-button op-primary op-small" style="margin-top:10px;" href="{{ route('owner.pets.edit',$pet) }}"><i class="bi bi-upload"></i> Upload Photo</a>
 </div>
 @endif
+
 {{-- Lightbox --}}
 <div class="od-lightbox" :class="{'is-open':opened}" @click.self="close()" @keydown.escape.window="close()" @keydown.left.window="prev()" @keydown.right.window="next()" x-show="opened" x-cloak>
 <button class="od-lightbox-close" @click="close()"><i class="bi bi-x-lg"></i></button>
@@ -60,10 +88,29 @@ $imageUrls=$sortedImages->map(fn($img)=>asset('storage/'.$img->image_path))->toA
 </div>
 </section>
 
-{{-- Health Tabs --}}
+ {{-- Pet Details --}}
 <section class="od-section" style="margin-bottom:12px;">
+<div class="od-section-header"><h2>@include('owner.partials.icon',['name'=>'info-circle']) Pet Details</h2></div>
+<div class="pet-info-grid">
+    <div class="pet-info-item"><div class="pet-info-label">Species</div><div class="pet-info-value">{{ $pet->species->name??'-' }}</div></div>
+    <div class="pet-info-item"><div class="pet-info-label">Breed</div><div class="pet-info-value">{{ $pet->breed->name??'-' }}</div></div>
+    <div class="pet-info-item"><div class="pet-info-label">Gender</div><div class="pet-info-value">@if($pet->gender)<i class="bi bi-gender-{{ $pet->gender==='male'?'male':'female' }}" style="color:{{ $pet->gender==='male'?'#007dff':'#ec4899' }};"></i> {{ ucfirst($pet->gender) }}@else-@endif</div></div>
+    <div class="pet-info-item"><div class="pet-info-label">Date of Birth</div><div class="pet-info-value">{{ $pet->date_of_birth?\Carbon\Carbon::parse($pet->date_of_birth)->format('M d, Y'):'-' }}</div></div>
+    <div class="pet-info-item"><div class="pet-info-label">Weight</div><div class="pet-info-value">{{ $pet->weight?number_format($pet->weight,1).' kg':'-' }}</div></div>
+    <div class="pet-info-item"><div class="pet-info-label">Color</div><div class="pet-info-value">{{ $pet->color?:'-' }}</div></div>
+    <div class="pet-info-item"><div class="pet-info-label">Neutered / Spayed</div><div class="pet-info-value">@if($pet->is_neutered)<span style="color:#00825a;"><i class="bi bi-check-circle-fill"></i> Yes</span>@else<span style="color:#99a8c2;">No</span>@endif</div></div>
+    <div class="pet-info-item"><div class="pet-info-label">Microchip</div><div class="pet-info-value"><code style="font-size:11px;background:#f2f6fb;padding:2px 6px;border-radius:3px;">{{ $pet->microchip_number?:'Not registered' }}</code></div></div>
+</div>
+@if($pet->description)
+<div style="padding:10px 0 0;font-size:12px;color:#3d5885;line-height:1.6;">{{ $pet->description }}</div>
+@endif
+</section>
+
+ {{-- Health Tabs --}}
+<section class="od-section">
+<div class="od-section-header"><h2>@include('owner.partials.icon',['name'=>'heart-pulse-fill']) Health</h2><a class="op-button op-small" href="{{ route('owner.health.overview',['pet_id'=>$pet->id]) }}" style="font-size:11px;"><i class="bi bi-arrow-right"></i> Full Overview</a></div>
 <nav class="od-health-tabs" role="tablist">
-<a class="active" href="#tab-health" role="tab" data-bs-toggle="tab" onclick="return false;"><i class="bi bi-clipboard2-pulse"></i> Health Records</a>
+<a class="active" href="#tab-health" role="tab" data-bs-toggle="tab" onclick="return false;"><i class="bi bi-clipboard2-pulse"></i> Records</a>
 <a href="#tab-vaccines" role="tab" data-bs-toggle="tab" onclick="return false;"><i class="bi bi-shield-check"></i> Vaccinations</a>
 <a href="#tab-docs" role="tab" data-bs-toggle="tab" onclick="return false;"><i class="bi bi-file-earmark-medical"></i> Documents</a>
 </nav>
@@ -71,15 +118,11 @@ $imageUrls=$sortedImages->map(fn($img)=>asset('storage/'.$img->image_path))->toA
 
 {{-- Health Records --}}
 <div class="tab-pane fade show active" id="tab-health">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-<h2 style="font-size:15px;font-weight:700;margin:0;">Health Records</h2>
-<button class="op-button op-primary op-small" data-bs-toggle="modal" data-bs-target="#addHealthRecordModal"><i class="bi bi-plus-lg"></i> Add Record</button>
-</div>
 <div style="overflow-x:auto;">
 <table class="od-health-table">
-<thead><tr><th style="width:16%;">Date</th><th style="width:14%;">Type</th><th style="width:40%;">Description</th><th style="width:18%;">Vet</th></tr></thead>
+<thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Vet</th></tr></thead>
 <tbody>
-@forelse($pet->healthRecords??[] as $record)
+@forelse($pet->healthRecords as $record)
 <tr>
 <td style="color:#52699b;font-size:12px;">{{ $record->record_date?\Carbon\Carbon::parse($record->record_date)->format('M d, Y'):'-' }}</td>
 <td><span style="background:#e6f2ff;color:#007dff;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;">{{ ucfirst($record->record_type??'-') }}</span></td>
@@ -87,7 +130,7 @@ $imageUrls=$sortedImages->map(fn($img)=>asset('storage/'.$img->image_path))->toA
 <td style="color:#52699b;font-size:12px;">{{ $record->vet->name??'-' }}</td>
 </tr>
 @empty
-<tr><td colspan="4" style="text-align:center;padding:30px;color:#99a8c2;">No health records yet.</td></tr>
+<tr><td colspan="4" style="text-align:center;padding:30px;color:#99a8c2;">No health records yet. <a href="{{ route('owner.health.overview',['pet_id'=>$pet->id]) }}">Add one</a></td></tr>
 @endforelse
 </tbody>
 </table>
@@ -96,15 +139,11 @@ $imageUrls=$sortedImages->map(fn($img)=>asset('storage/'.$img->image_path))->toA
 
 {{-- Vaccinations --}}
 <div class="tab-pane fade" id="tab-vaccines">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-<h2 style="font-size:15px;font-weight:700;margin:0;">Vaccinations</h2>
-<button class="op-button op-primary op-small" data-bs-toggle="modal" data-bs-target="#addVaccinationModal"><i class="bi bi-plus-lg"></i> Add Vaccination</button>
-</div>
 <div style="overflow-x:auto;">
 <table class="od-health-table">
-<thead><tr><th style="width:22%;">Vaccine</th><th style="width:18%;">Date</th><th style="width:22%;">Next Due</th><th style="width:18%;">Batch No.</th></tr></thead>
+<thead><tr><th>Vaccine</th><th>Date</th><th>Next Due</th><th>Batch No.</th></tr></thead>
 <tbody>
-@forelse($pet->vaccinations??[] as $v)
+@forelse($pet->vaccinations as $v)
 <tr>
 <td style="font-weight:600;font-size:12px;">{{ $v->vaccine_name?:'-' }}</td>
 <td style="color:#52699b;font-size:12px;">{{ $v->vaccination_date?\Carbon\Carbon::parse($v->vaccination_date)->format('M d, Y'):'-' }}</td>
@@ -121,11 +160,7 @@ $imageUrls=$sortedImages->map(fn($img)=>asset('storage/'.$img->image_path))->toA
 
 {{-- Documents --}}
 <div class="tab-pane fade" id="tab-docs">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-<h2 style="font-size:15px;font-weight:700;margin:0;">Medical Documents</h2>
-<button class="op-button op-primary op-small" data-bs-toggle="modal" data-bs-target="#addDocumentModal"><i class="bi bi-upload"></i> Upload</button>
-</div>
-@forelse($pet->medicalDocuments??[] as $doc)
+@forelse($pet->medicalDocuments as $doc)
 <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;border-bottom:1px solid #edf2f7;">
 <div style="display:flex;align-items:center;gap:10px;">
 @if(str_contains($doc->mime_type??'','image'))<i class="bi bi-image" style="color:#00865e;font-size:18px;"></i>
@@ -145,89 +180,47 @@ $imageUrls=$sortedImages->map(fn($img)=>asset('storage/'.$img->image_path))->toA
 </div>
 
 <aside class="od-aside">
-{{-- Pet Info --}}
+{{-- Quick Stats --}}
 <section class="od-side-card">
-<div class="od-section-header"><h2>@include('owner.partials.icon',['name'=>'paw']) {{ $pet->name }}</h2></div>
-<div style="font-size:12px;display:grid;gap:8px;">
-<div style="display:flex;justify-content:space-between;"><span style="color:#52699b;">Species</span><strong style="color:#0a1648;">{{ $pet->species->name??'-' }}</strong></div>
-<hr style="margin:0;border-color:#edf2f6;">
-<div style="display:flex;justify-content:space-between;"><span style="color:#52699b;">Breed</span><strong style="color:#0a1648;">{{ $pet->breed->name??'-' }}</strong></div>
-<hr style="margin:0;border-color:#edf2f6;">
-<div style="display:flex;justify-content:space-between;"><span style="color:#52699b;">Gender</span>@if($pet->gender)<span style="font-weight:600;"><i class="bi bi-{{ $pet->gender==='male'?'gender-male':'gender-female' }}" style="color:{{ $pet->gender==='male'?'#007dff':'#ec4899' }};"></i> {{ ucfirst($pet->gender) }}</span>@else<span>-</span>@endif</div>
-<hr style="margin:0;border-color:#edf2f6;">
-<div style="display:flex;justify-content:space-between;"><span style="color:#52699b;">Date of Birth</span><span>{{ $pet->date_of_birth?\Carbon\Carbon::parse($pet->date_of_birth)->format('M d, Y'):'-' }}</span></div>
-<hr style="margin:0;border-color:#edf2f6;">
-<div style="display:flex;justify-content:space-between;"><span style="color:#52699b;">Weight</span><span>{{ $pet->weight?$pet->weight.' kg':'-' }}</span></div>
-<hr style="margin:0;border-color:#edf2f6;">
-<div style="display:flex;justify-content:space-between;"><span style="color:#52699b;">Color</span><span>{{ $pet->color?:'-' }}</span></div>
-<hr style="margin:0;border-color:#edf2f6;">
-<div style="display:flex;justify-content:space-between;"><span style="color:#52699b;">Neutered</span>@if($pet->is_neutered)<span style="color:#00825a;font-weight:600;">Yes</span>@else<span style="color:#99a8c2;">No</span>@endif</div>
-<hr style="margin:0;border-color:#edf2f6;">
-<div style="display:flex;justify-content:space-between;"><span style="color:#52699b;">Microchip</span><code style="font-size:11px;">{{ $pet->microchip_number?:'-' }}</code></div>
-@if($pet->description)
-<hr style="margin:0;border-color:#edf2f6;">
-<div><span style="color:#52699b;display:block;margin-bottom:3px;">Description</span><p style="margin:0;color:#3d5885;line-height:1.5;">{{ $pet->description }}</p></div>
-@endif
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+<div style="text-align:center;padding:12px 8px;background:#e2f5ed;border-radius:8px;">
+<div style="font-size:18px;font-weight:700;color:#00865e;">{{ $pet->healthRecords->count() }}</div>
+<div style="font-size:10px;color:#3d5885;">Health Records</div>
+</div>
+<div style="text-align:center;padding:12px 8px;background:#e6f2ff;border-radius:8px;">
+<div style="font-size:18px;font-weight:700;color:#007dff;">{{ $pet->vaccinations->count() }}</div>
+<div style="font-size:10px;color:#3d5885;">Vaccinations</div>
+</div>
+<div style="text-align:center;padding:12px 8px;background:#fff3df;border-radius:8px;">
+<div style="font-size:18px;font-weight:700;color:#f29300;">{{ $pet->medicalDocuments->count() }}</div>
+<div style="font-size:10px;color:#3d5885;">Documents</div>
+</div>
+<div style="text-align:center;padding:12px 8px;background:#f0e7ff;border-radius:8px;">
+<div style="font-size:18px;font-weight:700;color:#823aff;">{{ $pet->images->count() }}</div>
+<div style="font-size:10px;color:#3d5885;">Photos</div>
+</div>
 </div>
 </section>
 
 {{-- Actions --}}
 <section class="od-side-card">
-<div class="od-section-header"><h2>@include('owner.partials.icon',['name'=>'gear-fill']) Actions</h2></div>
+<div class="od-section-header"><h2>Actions</h2></div>
 <div style="display:grid;gap:8px;">
 <a class="op-button op-primary" style="width:100%;justify-content:center;" href="{{ route('owner.pets.edit',$pet) }}"><i class="bi bi-pencil"></i> Edit Pet</a>
 <a class="op-button" style="width:100%;justify-content:center;" href="{{ route('owner.health.overview',['pet_id'=>$pet->id]) }}"><i class="bi bi-clipboard2-pulse"></i> Health Overview</a>
-<form action="{{ route('owner.pets.destroy',$pet) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this pet? This cannot be undone.')">
+<form action="{{ route('owner.pets.destroy',$pet) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete {{ $pet->name }}? This cannot be undone.')">
 @csrf @method('DELETE')
 <button type="submit" class="op-button op-danger" style="width:100%;justify-content:center;"><i class="bi bi-trash"></i> Delete Pet</button>
 </form>
 </div>
 </section>
 
+{{-- Member Info --}}
 <section class="od-info-card">@include('owner.partials.icon',['name'=>'paw'])<div><h2>{{ $pet->name }}</h2><p>Member since {{ $pet->created_at->format('M Y') }}.</p></div></section>
 </aside>
 </div>
 @include('owner.partials.discovery-banner')
 </div>
-
-{{-- Modals --}}
-<div class="modal fade" id="addHealthRecordModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
-<form action="{{ route('owner.health.store',$pet) }}" method="POST">@csrf
-<div class="modal-header"><h5 class="modal-title fw-semibold">Add Health Record</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-<div class="modal-body">
-<div class="mb-3"><label class="form-label fw-semibold" style="font-size:12px;">Date *</label><input type="date" name="record_date" class="form-control" value="{{ old('record_date',now()->format('Y-m-d')) }}" required></div>
-<div class="mb-3"><label class="form-label fw-semibold" style="font-size:12px;">Type *</label><select name="record_type" class="form-select" required><option value="">Select type</option>@foreach(['checkup','surgery','illness','injury','dental','emergency','other'] as $t)<option value="{{ $t }}" {{ old('record_type')==$t?'selected':'' }}>{{ ucfirst(__($t)) }}</option>@endforeach</select></div>
-<div class="mb-3"><label class="form-label fw-semibold" style="font-size:12px;">Description</label><textarea name="description" class="form-control" rows="3" placeholder="Describe the health record...">{{ old('description') }}</textarea></div>
-<div class="mb-3"><label class="form-label fw-semibold" style="font-size:12px;">Notes</label><textarea name="notes" class="form-control" rows="2" placeholder="Additional notes">{{ old('notes') }}</textarea></div>
-</div>
-<div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="op-button op-primary">Save Record</button></div>
-</form>
-</div></div></div>
-
-<div class="modal fade" id="addVaccinationModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
-<form action="{{ route('owner.health.storeVaccination',$pet) }}" method="POST">@csrf
-<div class="modal-header"><h5 class="modal-title fw-semibold">Add Vaccination</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-<div class="modal-body">
-<div class="mb-3"><label class="form-label fw-semibold" style="font-size:12px;">Vaccine Name *</label><input type="text" name="vaccine_name" class="form-control" value="{{ old('vaccine_name') }}" placeholder="e.g. Rabies, DHPP" required></div>
-<div class="row mb-3"><div class="col-md-6"><label class="form-label fw-semibold" style="font-size:12px;">Date *</label><input type="date" name="vaccination_date" class="form-control" value="{{ old('vaccination_date',now()->format('Y-m-d')) }}" required></div><div class="col-md-6"><label class="form-label fw-semibold" style="font-size:12px;">Next Due</label><input type="date" name="next_due_date" class="form-control" value="{{ old('next_due_date') }}"></div></div>
-<div class="mb-3"><label class="form-label fw-semibold" style="font-size:12px;">Batch Number</label><input type="text" name="batch_number" class="form-control" value="{{ old('batch_number') }}" placeholder="Optional"></div>
-<div class="mb-3"><label class="form-label fw-semibold" style="font-size:12px;">Notes</label><textarea name="notes" class="form-control" rows="2" placeholder="Additional notes">{{ old('notes') }}</textarea></div>
-</div>
-<div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="op-button op-primary">Save Vaccination</button></div>
-</form>
-</div></div></div>
-
-<div class="modal fade" id="addDocumentModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
-<form action="{{ route('owner.health.storeDocument',$pet) }}" method="POST" enctype="multipart/form-data">@csrf
-<div class="modal-header"><h5 class="modal-title fw-semibold">Upload Medical Document</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
-<div class="modal-body">
-<div class="mb-3"><label class="form-label fw-semibold" style="font-size:12px;">Document Type</label><select name="document_type" class="form-select"><option value="">Select type</option>@foreach(['lab_result','prescription','xray','vaccination_cert','insurance','other'] as $t)<option value="{{ $t }}" {{ old('document_type')==$t?'selected':'' }}>{{ ucfirst(str_replace('_',' ',$t)) }}</option>@endforeach</select></div>
-<div class="mb-3"><label class="form-label fw-semibold" style="font-size:12px;">File *</label><input type="file" name="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required><small style="color:#99a8c2;">PDF, JPG, PNG, DOC. Max 10MB.</small></div>
-<div class="mb-3"><label class="form-label fw-semibold" style="font-size:12px;">Description</label><input type="text" name="description" class="form-control" value="{{ old('description') }}" placeholder="Brief description"></div>
-</div>
-<div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="op-button op-primary">Upload</button></div>
-</form>
-</div></div></div>
 
 @push('scripts')
 <script>

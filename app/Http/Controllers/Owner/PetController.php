@@ -72,7 +72,7 @@ class PetController extends Controller
             $q->with('vet')->latest('record_date');
         }, 'vaccinations' => function ($q) {
             $q->latest('vaccination_date');
-        }]);
+        }, 'medicalDocuments']);
 
         return view('owner.pets.show', compact('pet'));
     }
