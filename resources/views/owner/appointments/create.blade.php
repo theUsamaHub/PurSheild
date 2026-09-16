@@ -23,7 +23,7 @@
                                 <select class="form-select @error('pet_id') is-invalid @enderror" id="pet_id" name="pet_id" required>
                                     <option value="">{{ __('Choose a pet') }}</option>
                                     @foreach($pets as $pet)
-                                        <option value="{{ $pet->id }}" {{ old('pet_id') == $pet->id ? 'selected' : '' }}>
+                                        <option value="{{ $pet->id }}" {{ old('pet_id',request('pet_id')) == $pet->id ? 'selected' : '' }}>
                                             {{ $pet->name }} - {{ $pet->species->name ?? '' }}
                                         </option>
                                     @endforeach
@@ -63,12 +63,12 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <x-input-label for="appointment_date" :value="__('Appointment Date')" />
-                                <x-text-input id="appointment_date" name="appointment_date" type="date" class="form-control" :value="old('appointment_date')" min="{{ date('Y-m-d') }}" required />
+                                <x-text-input id="appointment_date" name="appointment_date" type="date" class="form-control" :value="old('appointment_date',is_string(request('appointment_date'))?request('appointment_date'):null)" min="{{ date('Y-m-d') }}" required />
                                 <x-input-error :messages="$errors->get('appointment_date')" class="mt-1" />
                             </div>
                             <div class="col-md-6">
                                 <x-input-label for="appointment_time" :value="__('Appointment Time')" />
-                                <x-text-input id="appointment_time" name="appointment_time" type="time" class="form-control" :value="old('appointment_time')" required />
+                                <x-text-input id="appointment_time" name="appointment_time" type="time" class="form-control" :value="old('appointment_time',is_string(request('appointment_time'))?request('appointment_time'):null)" required />
                                 <x-input-error :messages="$errors->get('appointment_time')" class="mt-1" />
                             </div>
                         </div>

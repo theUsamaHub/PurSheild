@@ -29,6 +29,8 @@
                                     <option value="">{{ __('Select category') }}</option>
                                     <option value="feeding" {{ old('category') === 'feeding' ? 'selected' : '' }}>{{ __('Feeding') }}</option>
                                     <option value="hygiene" {{ old('category') === 'hygiene' ? 'selected' : '' }}>{{ __('Hygiene') }}</option>
+                                    <option value="grooming" {{ old('category') === 'grooming' ? 'selected' : '' }}>{{ __('Grooming') }}</option>
+                                    <option value="vaccination" {{ old('category') === 'vaccination' ? 'selected' : '' }}>{{ __('Vaccination') }}</option>
                                     <option value="exercise" {{ old('category') === 'exercise' ? 'selected' : '' }}>{{ __('Exercise') }}</option>
                                     <option value="health" {{ old('category') === 'health' ? 'selected' : '' }}>{{ __('Health') }}</option>
                                     <option value="training" {{ old('category') === 'training' ? 'selected' : '' }}>{{ __('Training') }}</option>

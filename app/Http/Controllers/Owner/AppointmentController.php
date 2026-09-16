@@ -5,11 +5,16 @@ namespace App\Http\Controllers\Owner;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\Pet;
-use App\Models\User;
 use App\Models\Review;
+use App\Models\User;
+use App\Support\OwnerDiscovery;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AppointmentController extends Controller
@@ -46,8 +51,9 @@ class AppointmentController extends Controller
 
     public function create(Request $request): View
     {
-        $pets = Pet::where('owner_id', Auth::id())->orderBy('name')->get();
-        $vets = User::whereHas('roles', function ($q) {
+        $request->validate(['pet_id' => ['nullable', 'integer', Rule::exists('pets', 'id')->where('owner_id', Auth::id())], 'vet_id' => ['nullable', 'integer', 'exists:users,id']]);
+        $pets = Pet::where('owner_id', Auth::id())->with('species')->orderBy('name')->get();
+        $vets = User::where('status', 'active')->whereHas('roles', function ($q) {
             $q->where('slug', 'vet');
         })->whereHas('vetProfile', function ($q) {
             $q->where('is_verified', true);
@@ -81,23 +87,37 @@ class AppointmentController extends Controller
         ]);
 
         $pet = Pet::where('id', $validated['pet_id'])->where('owner_id', Auth::id())->first();
-        if (!$pet) {
+        if (! $pet) {
             return back()->withErrors(['pet_id' => 'You can only book appointments for your own pets.'])->withInput();
         }
 
-        $vet = User::whereHas('roles', function ($q) {
+        $vet = User::where('status', 'active')->whereHas('roles', function ($q) {
             $q->where('slug', 'vet');
         })->whereHas('vetProfile', function ($q) {
             $q->where('is_verified', true);
         })->find($validated['vet_id']);
 
-        if (!$vet) {
+        if (! $vet) {
             return back()->withErrors(['vet_id' => 'Selected veterinarian is not available.'])->withInput();
         }
 
         $data['owner_id'] = Auth::id();
 
-        Appointment::create(array_merge($validated, $data));
+        DB::transaction(function () use ($validated, $data) {
+            $vet = User::whereKey($validated['vet_id'])->lockForUpdate()->firstOrFail();
+            if (! OwnerDiscovery::vets()->whereKey($vet->id)->exists()) {
+                throw ValidationException::withMessages(['vet_id' => 'This veterinarian is no longer available.']);
+            }
+            $date = Carbon::parse($validated['appointment_date']);
+            if (! in_array($validated['appointment_time'], OwnerDiscovery::availableTimes($vet->id, $date))) {
+                throw ValidationException::withMessages(['appointment_time' => 'Choose an open time within this veterinarian’s schedule. This time is past, blocked, or already booked.']);
+            }
+            $pet = Pet::whereKey($validated['pet_id'])->where('owner_id', Auth::id())->lockForUpdate()->firstOrFail();
+            if (Appointment::where('pet_id', $pet->id)->whereDate('appointment_date', $date)->whereIn('status', ['pending', 'approved', 'rescheduled'])->get()->contains(fn ($a) => abs(Carbon::parse($a->appointment_time)->diffInMinutes(Carbon::parse($validated['appointment_time']), false)) < 30)) {
+                throw ValidationException::withMessages(['appointment_time' => 'Your pet already has an appointment at this time.']);
+            }
+            Appointment::create(array_merge($validated, $data));
+        });
 
         return redirect()->route('owner.appointments.index')
             ->with('success', 'Appointment booked successfully.');

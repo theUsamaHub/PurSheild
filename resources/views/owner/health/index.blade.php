@@ -1,204 +1,29 @@
 @extends('layouts.owner.app')
-
+@section('title', 'Health Records')
+@push('styles')
+@include('owner.partials.discovery-styles')
+@endpush
 @section('content')
-    <div class="mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h2 class="h4 mb-0 fw-semibold">{{ __('Health Records') }}</h2>
-                <div class="text-muted" style="font-size:0.875rem;">
-                    {{ $pet->name }} - {{ $pet->species->name ?? '' }}{{ $pet->breed ? ' - ' . $pet->breed->name : '' }}
-                </div>
-            </div>
-            <a href="{{ route('owner.pets.show', $pet) }}" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-left me-1"></i>{{ __('Back to Pet') }}
-            </a>
-        </div>
-    </div>
-
-    <!-- Health Records Section -->
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-semibold"><i class="bi bi-clipboard2-pulse me-1"></i>{{ __('Health Records') }}</h6>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Date') }}</th>
-                            <th>{{ __('Type') }}</th>
-                            <th>{{ __('Description') }}</th>
-                            <th>{{ __('Vet') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($pet->healthRecords ?? [] as $record)
-                            <tr>
-                                <td class="text-muted">{{ $record->record_date ? \Carbon\Carbon::parse($record->record_date)->format('M d, Y') : '-' }}</td>
-                                <td>
-                                    <span class="badge bg-primary">{{ ucfirst($record->record_type ?? '-') }}</span>
-                                </td>
-                                <td>{{ $record->description ?: '-' }}</td>
-                                <td class="text-muted">{{ $record->vet->name ?? '-' }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="text-center py-4">
-                                    <div class="empty-state">
-                                        <i class="bi bi-clipboard2-pulse" style="font-size:2rem;opacity:0.3;"></i>
-                                        <p class="mt-2 text-muted" style="font-size:0.875rem;">{{ __('No health records yet.') }}</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Vaccinations Section -->
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-semibold"><i class="bi bi-shield-check me-1"></i>{{ __('Vaccinations') }}</h6>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Vaccine') }}</th>
-                            <th>{{ __('Date') }}</th>
-                            <th>{{ __('Next Due') }}</th>
-                            <th>{{ __('Batch No.') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($pet->vaccinations ?? [] as $vaccination)
-                            <tr>
-                                <td class="fw-medium">{{ $vaccination->vaccine_name ?: '-' }}</td>
-                                <td class="text-muted">{{ $vaccination->vaccination_date ? \Carbon\Carbon::parse($vaccination->vaccination_date)->format('M d, Y') : '-' }}</td>
-                                <td>
-                                    @if ($vaccination->next_due_date)
-                                        @php $isOverdue = \Carbon\Carbon::parse($vaccination->next_due_date)->isPast(); @endphp
-                                        <span class="{{ $isOverdue ? 'text-danger fw-semibold' : 'text-muted' }}">
-                                            {{ \Carbon\Carbon::parse($vaccination->next_due_date)->format('M d, Y') }}
-                                            @if ($isOverdue)
-                                                <i class="bi bi-exclamation-triangle ms-1"></i>
-                                            @endif
-                                        </span>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                                <td><code>{{ $vaccination->batch_number ?: '-' }}</code></td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="text-center py-4">
-                                    <div class="empty-state">
-                                        <i class="bi bi-shield-check" style="font-size:2rem;opacity:0.3;"></i>
-                                        <p class="mt-2 text-muted" style="font-size:0.875rem;">{{ __('No vaccination records yet.') }}</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Medical Documents Section -->
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-semibold"><i class="bi bi-file-earmark-medical me-1"></i>{{ __('Medical Documents') }}</h6>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Document') }}</th>
-                            <th>{{ __('Type') }}</th>
-                            <th>{{ __('Date') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($pet->media ?? [] as $document)
-                            @if(str_contains($document->mime_type ?? '', 'pdf') || str_contains($document->mime_type ?? '', 'image') || str_contains($document->name ?? '', 'medical') || str_contains($document->name ?? '', 'health'))
-                                <tr>
-                                    <td>
-                                        <a href="{{ $document->url }}" target="_blank" class="text-decoration-none">
-                                            <i class="bi bi-file-earmark me-1"></i>{{ $document->original_name }}
-                                        </a>
-                                    </td>
-                                    <td><code>{{ $document->mime_type }}</code></td>
-                                    <td class="text-muted">{{ $document->created_at->format('M d, Y') }}</td>
-                                </tr>
-                            @endif
-                        @empty
-                            <tr>
-                                <td colspan="3" class="text-center py-4">
-                                    <div class="empty-state">
-                                        <i class="bi bi-file-earmark-medical" style="font-size:2rem;opacity:0.3;"></i>
-                                        <p class="mt-2 text-muted" style="font-size:0.875rem;">{{ __('No medical documents uploaded yet.') }}</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Insurance Policies Section -->
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-semibold"><i class="bi bi-shield-lock me-1"></i>{{ __('Insurance Policies') }}</h6>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Provider') }}</th>
-                            <th>{{ __('Policy Number') }}</th>
-                            <th>{{ __('Status') }}</th>
-                            <th>{{ __('Expiry') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @php $insurancePolicies = $pet->insurancePolicies ?? collect(); @endphp
-                        @forelse($insurancePolicies as $policy)
-                            <tr>
-                                <td class="fw-medium">{{ $policy->provider ?? '-' }}</td>
-                                <td><code>{{ $policy->policy_number ?? '-' }}</code></td>
-                                <td>
-                                    @if ($policy->status === 'active')
-                                        <span class="badge bg-success">{{ __('Active') }}</span>
-                                    @elseif ($policy->status === 'expired')
-                                        <span class="badge bg-danger">{{ __('Expired') }}</span>
-                                    @else
-                                        <span class="badge bg-secondary">{{ ucfirst($policy->status ?? '-') }}</span>
-                                    @endif
-                                </td>
-                                <td class="text-muted">{{ $policy->expiry_date ? \Carbon\Carbon::parse($policy->expiry_date)->format('M d, Y') : '-' }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="text-center py-4">
-                                    <div class="empty-state">
-                                        <i class="bi bi-shield-lock" style="font-size:2rem;opacity:0.3;"></i>
-                                        <p class="mt-2 text-muted" style="font-size:0.875rem;">{{ __('No insurance policies found.') }}</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+<div class="od-page">
+<div class="op-breadcrumb"><a href="{{ route('owner.dashboard') }}"><i class="bi bi-house-door-fill"></i> Dashboard</a><i class="bi bi-chevron-right"></i><span>Health Records</span></div>
+@php
+$types=['vaccination'=>['Vaccination','Vaccinations','vaccination','blue'],'treatment'=>['Treatment','Treatments','medical','red'],'illness'=>['Illness','Illnesses','ear-fill','amber'],'allergy'=>['Allergy','Allergies','paw','purple'],'lab_report'=>['Lab Report','Lab Reports','flask-fill','green'],'other'=>['Other','Other Records','document','blue']];
+@endphp
+<div class="op-heading"><div><h1>@include('owner.partials.icon',['name'=>'heart']) Health Records</h1><p>Keep track of your pet’s health, vaccinations, treatments, and medical history.</p></div><div class="op-heading-actions"><div class="op-note">@include('owner.partials.icon',['name'=>'paw'])<span>“Healthy pets<br>happier lives.”</span></div>@if($pet)<button class="op-button op-primary op-large" type="button" data-bs-toggle="modal" data-bs-target="#addHealthRecord">@include('owner.partials.icon',['name'=>'plus']) Add Record</button>@endif</div></div>
+@if(!$pet)<section class="od-section"><div class="op-empty">Add a pet to start keeping health records.<br><a class="op-button op-primary" href="{{ route('owner.pets.create') }}">Add Pet</a></div></section>
+@else
+<div class="od-pet-selector"><form class="od-pet-switch" method="GET" action="{{ route('owner.health.overview') }}" data-owner-filters>@include('owner.partials.photo',['pet'=>$pet])<div><select name="pet_id" aria-label="Select pet for health records">@foreach($pets as $item)<option value="{{ $item->id }}" @selected($item->id===$pet->id)>{{ $item->name }}</option>@endforeach</select><small>{{ $pet->breed?->name?:$pet->species?->name }}</small></div><button type="submit" class="visually-hidden">View pet records</button></form><span class="od-pet-summary-item">@include('owner.partials.icon',['name'=>'paw']){{ ucfirst($pet->gender??'Unknown') }}</span><span class="od-pet-summary-item">@include('owner.partials.icon',['name'=>'calendar'])@include('owner.partials.age',['pet'=>$pet])</span><span class="od-pet-summary-item">@include('owner.partials.icon',['name'=>'weight']){{ $pet->weight!==null?rtrim(rtrim($pet->weight,'0'),'.').' kg':'Weight not recorded' }}</span>@include('owner.partials.health',['pet'=>$pet])<a class="op-button" href="{{ route('owner.pets.show',$pet) }}">View Pet Profile</a></div>
+<div class="od-layout"><div><nav class="od-health-tabs" aria-label="Health record types"><a class="{{ !request('type')?'active':'' }}" href="{{ route('owner.health.index',array_merge(['pet'=>$pet->id],request()->except(['type','page','record','pet_id']))) }}">All Records ({{ $counts->sum() }})</a>@foreach($types as $type=>$config)@if($type!=='other'||$counts->get($type,0))<a class="{{ request('type')===$type?'active':'' }}" href="{{ route('owner.health.index',array_merge(['pet'=>$pet->id],request()->except(['type','page','record','pet_id']),['type'=>$type])) }}">{{ $config[1] }} ({{ $counts->get($type,0) }})</a>@endif
+@endforeach</nav>
+@if(request()->filled('search'))<div class="od-filter-notice">Results for “{{ request('search') }}” <a href="{{ route('owner.health.index',$pet) }}">Clear Search</a></div>@endif
+<section class="od-section"><div class="table-responsive"><table class="od-health-table"><thead><tr><th>#</th><th>Record Type</th><th>Details</th><th>Date</th><th>Vet / Clinic</th><th>File</th><th>Actions</th></tr></thead><tbody>
+@forelse($records as $record)@php($config=$types[$record->type])<tr><td>{{ $records->firstItem()+$loop->index }}</td><td><span class="od-record-badge od-tone-{{ $config[3] }}">@include('owner.partials.icon',['name'=>$config[2]]){{ $config[0] }}</span></td><td><strong>{{ Str::limit($record->title,70) }}</strong><small>{{ Str::limit($record->details??'',90) }}</small></td><td>{{ $record->date?->format('d M Y') }}</td><td>{{ $record->vet?:'Not recorded' }}<small>{{ $record->clinic }}</small></td><td>@if($record->files->isNotEmpty())<a href="{{ route('owner.health.document',[$pet,$record->files->first()]) }}" aria-label="Download file for {{ $record->title }}"><i class="bi bi-file-earmark-text fs-6"></i></a>@else<span class="op-muted">—</span>@endif</td><td><div class="d-flex gap-2"><a class="op-button" href="{{ route('owner.health.index',array_merge(['pet'=>$pet->id],request()->except(['record','pet_id']),['record'=>$record->key])) }}">View</a><div class="dropdown"><button class="op-more" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for {{ $record->title }}"><i class="bi bi-three-dots"></i></button><ul class="dropdown-menu dropdown-menu-end"><li><a class="dropdown-item" href="{{ route('owner.health.index',['pet'=>$pet->id,'record'=>$record->key]) }}">View full details</a></li>@foreach($record->files as $file)<li><a class="dropdown-item" href="{{ route('owner.health.document',[$pet,$file]) }}">Download {{ Str::limit($file->file_name,35) }}</a></li>@endforeach<li><a class="dropdown-item" href="{{ route('owner.health.download',$pet) }}">Download health history</a></li></ul></div></div></td></tr>@empty<tr><td colspan="7"><div class="op-empty">No records match your filters.</div></td></tr>@endforelse
+</tbody></table></div>@include('owner.partials.pagination',['items'=>$records])</section>
+<div class="od-health-actions"><a href="{{ route('owner.appointments.create',['pet_id'=>$pet->id]) }}">@include('owner.partials.icon',['name'=>'calendar'])<span><strong>Book a Vet Appointment</strong><small>Schedule a visit for {{ $pet->name }}</small></span></a><button type="button" data-bs-toggle="modal" data-bs-target="#addHealthRecord">@include('owner.partials.icon',['name'=>'plus-circle-fill'])<span><strong>Add New Record</strong><small>Vaccination, treatment, or report</small></span></button><a href="{{ route('owner.health.download',$pet) }}">@include('owner.partials.icon',['name'=>'document'])<span><strong>Download Records</strong><small>Get a full health history PDF</small></span></a></div>
+</div><aside class="od-side-card"><div class="od-section-header"><h2>@include('owner.partials.icon',['name'=>'paw']) Health Timeline</h2><a href="{{ route('owner.health.index',$pet) }}">View All ›</a></div><div class="od-timeline">@forelse($timeline as $record)@php($config=$types[$record->type])<a class="od-timeline-item" href="{{ route('owner.health.index',['pet'=>$pet->id,'record'=>$record->key]) }}"><span class="od-tone-{{ $config[3] }}">@include('owner.partials.icon',['name'=>$config[2]])</span><div><time>{{ $record->date?->format('d M Y') }}</time><strong>{{ Str::limit($record->title,45) }}</strong><p>{{ Str::limit($record->details??'',70) }}</p></div></a>@empty<p class="op-empty">Your pet’s health history will appear here.</p>@endforelse</div><div class="od-health-quote">@include('owner.partials.icon',['name'=>'paw']) Regular checkups today<br>for a healthier tomorrow!</div></aside></div>
+@include('owner.health.add-record')
+@if($selected)<div class="modal fade od-modal" id="selectedHealthRecord" tabindex="-1" aria-labelledby="selectedHealthTitle" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h2 class="modal-title" id="selectedHealthTitle">{{ $types[$selected->type][0] }} Details</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><h3 class="h5">{{ $selected->title }}</h3><p>{{ $pet->name }} · {{ $selected->date?->format('d M Y') }}</p><p>{{ $selected->vet }} {{ $selected->clinic }}</p><p class="od-record-text">{{ $selected->details }}</p>@if($selected->notes && $selected->notes!==$selected->details)<p class="od-record-text">{{ $selected->notes }}</p>@endif @foreach($selected->files as $file)<a class="op-button" href="{{ route('owner.health.document',[$pet,$file]) }}"><i class="bi bi-download"></i>{{ $file->file_name }}</a>@endforeach</div></div></div></div>@endif
+@endif
+</div>
+@include('owner.partials.discovery-scripts')
 @endsection

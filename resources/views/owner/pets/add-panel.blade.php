@@ -1,0 +1,24 @@
+<aside class="op-card op-add-pet" id="addPet" aria-label="Add New Pet"><div class="op-add-title"><h2>@include('owner.partials.icon',['name'=>'paw']) Add New Pet</h2><a href="{{ route('owner.pets.index',array_merge(request()->except('panel'),['panel'=>'closed'])) }}" aria-label="Close add pet form"><i class="bi bi-x-lg"></i></a></div>
+<form method="POST" action="{{ route('owner.pets.store') }}" enctype="multipart/form-data" class="op-pet-form" id="ownerAddPetForm">@csrf
+<div class="full"><label for="newPetName">Pet Name <em>*</em></label><input id="newPetName" name="name" value="{{ old('name') }}" placeholder="Enter pet name" required maxlength="255"></div>
+<div class="full"><label for="newPetSpecies">Species <em>*</em></label><select id="newPetSpecies" name="species_id" required><option value="">Select species</option>@foreach($species as $item)<option value="{{ $item->id }}" @selected(old('species_id')==$item->id)>{{ $item->name }}</option>@endforeach</select></div>
+<div class="full"><label for="newPetBreed">Breed <em id="breedRequired">*</em></label><select id="newPetBreed" name="breed_id"><option value="">Select breed</option>@foreach($breeds as $breed)<option value="{{ $breed->id }}" data-species="{{ $breed->species_id }}" @selected(old('breed_id')==$breed->id)>{{ $breed->name }}</option>@endforeach</select></div>
+<div><label for="newPetGender">Gender <em>*</em></label><select id="newPetGender" name="gender" required><option value="">Select</option><option value="male" @selected(old('gender')==='male')>Male</option><option value="female" @selected(old('gender')==='female')>Female</option></select></div>
+<div><label for="newPetDob">Date of Birth <em>*</em></label><input type="date" id="newPetDob" name="date_of_birth" max="{{ today()->toDateString() }}" value="{{ old('date_of_birth') }}" required></div>
+<div><label for="newPetWeight">Weight (kg)</label><input type="number" id="newPetWeight" name="weight" min="0.01" max="999999.99" step="0.01" value="{{ old('weight') }}" placeholder="Enter weight"></div>
+<div><label for="newPetColor">Color</label><input id="newPetColor" name="color" value="{{ old('color') }}" maxlength="100" placeholder="Enter color"></div>
+<div class="full"><label for="newPetPhoto">Upload Photo</label><div class="op-upload-row"><div class="op-upload"><i class="bi bi-image" id="photoIcon"></i><img id="newPetPreview" alt="New pet preview" hidden><span id="photoDescription">Click to upload<br>or drag and drop</span><input type="file" name="profile_image" id="newPetPhoto" accept="image/jpeg,image/png"></div><small>Supports: JPG, PNG<br>(Max 5MB)</small></div><small class="text-danger" id="photoError" role="alert"></small></div>
+<div class="full"><label for="newPetNotes">Additional Notes</label><textarea id="newPetNotes" name="description" maxlength="5000" placeholder="Any special notes about your pet...">{{ old('description') }}</textarea></div>
+<div class="full op-form-actions"><a class="op-button" href="{{ route('owner.pets.index',array_merge(request()->except('panel'),['panel'=>'closed'])) }}">Cancel</a><button type="submit" class="op-button op-primary">Save Pet</button></div></form></aside>
+@push('scripts')<script>
+document.addEventListener('DOMContentLoaded',()=>{
+const species=document.getElementById('newPetSpecies'),breed=document.getElementById('newPetBreed');
+const breedOptions=Array.from(breed.options).slice(1).map(option=>({id:option.value,name:option.textContent,species:option.dataset.species}));
+function updateBreeds(preserve){const previous=preserve?breed.value:'';const matches=breedOptions.filter(item=>item.species===species.value);breed.replaceChildren(new Option(!species.value||matches.length?'Select breed':'No breed listed', ''));matches.forEach(item=>breed.add(new Option(item.name,item.id,false,item.id===previous)));breed.required=matches.length>0;document.getElementById('breedRequired').hidden=!breed.required;}
+species.addEventListener('change',()=>updateBreeds(false));updateBreeds(true);
+const input=document.getElementById('newPetPhoto'),preview=document.getElementById('newPetPreview'),description=document.getElementById('photoDescription');let previewUrl;
+input.addEventListener('change',()=>{const file=input.files[0];if(previewUrl)URL.revokeObjectURL(previewUrl);preview.hidden=true;document.getElementById('photoIcon').hidden=false;input.setCustomValidity('');document.getElementById('photoError').textContent='';description.textContent='Click to upload or drag and drop';if(!file)return;
+if(file.size>5*1024*1024||!['image/jpeg','image/png'].includes(file.type)){const error='Choose a JPG or PNG photo up to 5MB.';input.setCustomValidity(error);document.getElementById('photoError').textContent=error;return;}
+previewUrl=URL.createObjectURL(file);preview.src=previewUrl;preview.hidden=false;document.getElementById('photoIcon').hidden=true;description.textContent=file.name;
+});});
+</script>@endpush

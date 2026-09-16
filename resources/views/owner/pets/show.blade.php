@@ -259,7 +259,7 @@
                                             <small class="text-muted">{{ $doc->document_type ?: __('Medical Document') }} &middot; {{ $doc->created_at->format('M d, Y') }}</small>
                                         </div>
                                     </div>
-                                    <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                    <a href="{{ route('owner.health.document',[$pet,$doc]) }}" target="_blank" class="btn btn-outline-secondary btn-sm">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                 </div>

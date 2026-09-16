@@ -30,6 +30,8 @@
                                     <option value="">{{ __('Select category') }}</option>
                                     <option value="feeding" {{ old('category', $careContent->category) === 'feeding' ? 'selected' : '' }}>{{ __('Feeding') }}</option>
                                     <option value="hygiene" {{ old('category', $careContent->category) === 'hygiene' ? 'selected' : '' }}>{{ __('Hygiene') }}</option>
+                                    <option value="grooming" {{ old('category', $careContent->category) === 'grooming' ? 'selected' : '' }}>{{ __('Grooming') }}</option>
+                                    <option value="vaccination" {{ old('category', $careContent->category) === 'vaccination' ? 'selected' : '' }}>{{ __('Vaccination') }}</option>
                                     <option value="exercise" {{ old('category', $careContent->category) === 'exercise' ? 'selected' : '' }}>{{ __('Exercise') }}</option>
                                     <option value="health" {{ old('category', $careContent->category) === 'health' ? 'selected' : '' }}>{{ __('Health') }}</option>
                                     <option value="training" {{ old('category', $careContent->category) === 'training' ? 'selected' : '' }}>{{ __('Training') }}</option>

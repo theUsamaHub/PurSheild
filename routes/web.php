@@ -29,6 +29,9 @@ Route::get('/dashboard', function () {
 Route::middleware(['auth', 'verified', 'role:owner'])->prefix('owner')->name('owner.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Owner\DashboardController::class, 'index'])->name('dashboard');
 
+    Route::patch('/notifications/read-all', [\App\Http\Controllers\Owner\NotificationController::class, 'readAll'])->name('notifications.readAll');
+    Route::patch('/notifications/{source}/{notification}/read', [\App\Http\Controllers\Owner\NotificationController::class, 'read'])->whereIn('source', ['practice', 'system'])->name('notifications.read');
+
     // Pets
     Route::get('/pets', [\App\Http\Controllers\Owner\PetController::class, 'index'])->name('pets.index');
     Route::get('/pets/create', [\App\Http\Controllers\Owner\PetController::class, 'create'])->name('pets.create');
@@ -38,6 +41,10 @@ Route::middleware(['auth', 'verified', 'role:owner'])->prefix('owner')->name('ow
     Route::put('/pets/{pet}', [\App\Http\Controllers\Owner\PetController::class, 'update'])->name('pets.update');
     Route::delete('/pets/{pet}', [\App\Http\Controllers\Owner\PetController::class, 'destroy'])->name('pets.destroy');
 
+    Route::post('/favorites/{kind}/{target}', [\App\Http\Controllers\Owner\FavoriteController::class, 'store'])->whereIn('kind',['vet','pet'])->whereNumber('target')->name('favorites.store');
+    Route::get('/health-records', [\App\Http\Controllers\Owner\HealthController::class, 'index'])->name('health.overview');
+    Route::get('/pets/{pet}/health/download', [\App\Http\Controllers\Owner\HealthController::class, 'download'])->name('health.download');
+    Route::get('/pets/{pet}/documents/{document}', [\App\Http\Controllers\Owner\HealthController::class, 'document'])->name('health.document');
     // Health Records
     Route::get('/pets/{pet}/health', [\App\Http\Controllers\Owner\HealthController::class, 'index'])->name('health.index');
     Route::post('/pets/{pet}/health', [\App\Http\Controllers\Owner\HealthController::class, 'store'])->name('health.store');

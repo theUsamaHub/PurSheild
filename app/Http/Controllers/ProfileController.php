@@ -49,7 +49,7 @@ class ProfileController extends Controller
         if ($user->hasRole('vet')) {
             $vetData = collect($validated)->only([
                 'qualification', 'experience_years', 'clinic_name',
-                'clinic_address', 'consultation_fee', 'bio',
+                'clinic_address', 'consultation_fee', 'bio', 'city', 'latitude', 'longitude', 'online_consultation', 'emergency_services',
             ])->toArray();
 
             if ($user->vetProfile) {
