@@ -1,6 +1,6 @@
 <aside class="sidebar d-none d-lg-flex flex-column" id="sidebar">
     <div class="p-3 border-bottom border-secondary">
-        <a href="{{ route('user.dashboard') }}" class="text-decoration-none d-flex align-items-center">
+        <a href="{{ route('dashboard') }}" class="text-decoration-none d-flex align-items-center">
             <x-application-logo class="w-8 h-8" />
             <span class="text-white fw-semibold ms-2 fs-6">{{ config('app.name', 'LSK') }}</span>
         </a>
@@ -9,7 +9,7 @@
     <nav class="flex-grow-1 py-3 overflow-auto">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('user.dashboard') ? 'active' : '' }}" href="{{ route('user.dashboard') }}">
+                <a class="nav-link {{ request()->routeIs('dashboard') || request()->routeIs('owner.dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
                     <i class="bi bi-grid-1x2"></i> {{ __('Dashboard') }}
                 </a>
             </li>

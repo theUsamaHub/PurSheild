@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('thumbnail')->nullable();
             $table->enum('status', ['active','inactive'])->default('active');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

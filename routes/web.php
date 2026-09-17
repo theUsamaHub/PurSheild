@@ -2,9 +2,16 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+use App\Http\Controllers\PublicController;
+
+// ─── Public Pages ────────────────────────────────────────
+Route::get('/', [PublicController::class, 'home'])->name('home');
+Route::get('/about', [PublicController::class, 'about'])->name('about');
+Route::get('/products', [PublicController::class, 'products'])->name('products');
+Route::get('/care', [PublicController::class, 'care'])->name('care');
+Route::get('/vets', [PublicController::class, 'vets'])->name('vets');
+Route::get('/shelters', [PublicController::class, 'shelters'])->name('shelters');
+Route::get('/contact', [PublicController::class, 'contact'])->name('contact');
 
 Route::post('/contact', [\App\Http\Controllers\ContactController::class, 'store'])->name('contact.store');
 

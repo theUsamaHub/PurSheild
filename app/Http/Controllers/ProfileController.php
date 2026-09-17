@@ -42,8 +42,12 @@ class ProfileController extends Controller
             $validated['profile_image'] = $request->file('profile_image')->store('profile', 'public');
         }
 
-        unset($validated['email']);
-        $user->fill(collect($validated)->only(['name', 'phone', 'address', 'profile_image'])->toArray());
+        $user->fill(collect($validated)->only(['name', 'email', 'phone', 'address', 'profile_image'])->toArray());
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
         $user->save();
 
         if ($user->hasRole('vet')) {
@@ -84,7 +88,7 @@ class ProfileController extends Controller
 
     public function destroy(Request $request): RedirectResponse
     {
-        $request->validate([
+        $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);
 
