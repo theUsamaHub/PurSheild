@@ -1,34 +1,124 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'FurShield') }} - Sign In</title>
-        <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+<head>
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
+    <meta charset="UTF-8">
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" integrity="sha384-Bk5cbLkZQ5raZ0+H2/+VbfYx3WpvxvQK4zqXZr7sYODuaX7bKXoSOnipQxkaS8sv" crossorigin="anonymous">
-        @vite(['resources/css/app.scss', 'resources/js/app.js'])
-    </head>
-    <body class="auth-wrapper">
-        <div class="auth-card">
-            <div class="auth-logo">
-                <div class="auth-logo-icon">
-                    <i class="bi bi-shield-check"></i>
-                </div>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>{{ $title ?? config('app.name', 'FurShield') }}</title>
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <link rel="stylesheet"
+          href="{{ asset('css/auth.css') }}">
+
+</head>
+
+<body>
+
+<canvas id="authParticles"></canvas>
+
+<a href="{{ url('/') }}"
+   class="auth-back">
+
+    <i class="fa-solid fa-arrow-left"></i>
+
+    Home
+
+</a>
+
+
+<div class="auth-page {{ $authPageClass ?? '' }}">
+
+    <section class="auth-showcase {{ $authShowcaseClass ?? '' }}">
+
+        <div class="auth-orb orb-one"></div>
+        <div class="auth-orb orb-two"></div>
+
+        <a href="{{ url('/') }}"
+           class="auth-brand">
+
+            <div>
+                <i class="fa-solid fa-shield-dog"></i>
             </div>
-            <h4 class="auth-title text-center">FurShield</h4>
-            <p class="auth-subtitle text-center">Every Paw/Wing Deserves a Shield of Love</p>
 
-            <div class="mt-4">
-                {{ $slot }}
-            </div>
+            <span>
+                <strong>FurShield</strong>
+                <small>Protect • Care • Love</small>
+            </span>
+
+        </a>
+
+
+        <div class="auth-showcase-content">
+            {{ $showcase ?? '' }}
         </div>
 
-        @stack('scripts')
-    </body>
+
+        <div class="auth-pet-image">
+
+            <img src="{{ $showcaseImage ?? asset('images/hero-pets.jpg') }}"
+                 alt="FurShield pets">
+
+        </div>
+
+    </section>
+
+
+    <section class="auth-form-side">
+
+        <div class="auth-form-wrapper {{ $formWrapperClass ?? '' }}">
+
+            <div class="mobile-auth-logo">
+
+                <i class="fa-solid fa-shield-dog"></i>
+
+                <strong>
+                    FurShield
+                </strong>
+
+            </div>
+
+            {{ $slot }}
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<div class="auth-toast"
+     id="authToast">
+
+    <i class="fa-solid fa-circle-check"></i>
+
+    <span id="authToastMsg">
+        Welcome to FurShield.
+    </span>
+
+</div>
+
+
+<script src="{{ asset('js/auth.js') }}"></script>
+
+@stack('scripts')
+
+</body>
 </html>

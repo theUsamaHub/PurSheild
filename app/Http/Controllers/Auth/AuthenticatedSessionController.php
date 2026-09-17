@@ -68,6 +68,10 @@ class AuthenticatedSessionController extends Controller
             return route('shelter.dashboard', absolute: false);
         }
 
-        return route('owner.dashboard', absolute: false);
+        if ($user->hasRole('owner')) {
+            return route('owner.dashboard', absolute: false);
+        }
+
+        return route('dashboard', absolute: false);
     }
 }

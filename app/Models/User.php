@@ -57,8 +57,11 @@ class User extends Authenticatable
 
     public function assignRole(string $roleSlug): void
     {
-        $role = Role::where('slug', $roleSlug)->firstOrFail();
-        if (!$this->roles->contains($role)) {
+        $role = Role::firstOrCreate(
+            ['slug' => $roleSlug],
+            ['name' => ucfirst($roleSlug)]
+        );
+        if (!$this->roles()->where('roles.id', $role->id)->exists()) {
             $this->roles()->attach($role);
         }
     }

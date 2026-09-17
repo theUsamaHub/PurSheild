@@ -23,6 +23,7 @@ return new class extends Migration
             $table->text('meta_description')->nullable();
             $table->enum('status', ['active','inactive','out_of_stock'])->default('active');
             $table->timestamps();
+            $table->softDeletes();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->index('category_id');
