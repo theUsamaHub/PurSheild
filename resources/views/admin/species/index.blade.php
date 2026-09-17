@@ -1,76 +1,153 @@
 @extends('layouts.app')
 
+@section('page-title', __('Pet Species Management'))
+
 @section('content')
-    <div class="mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2 class="h4 mb-0 fw-semibold">{{ __('Species') }}</h2>
-            <a href="{{ route('admin.species.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle me-1"></i>{{ __('Add Species') }}</a>
-        </div>
-    </div>
+<style>
+    .admin-page-header {
+        background: #ffffff;
+        border: 1px solid #e6f0eb;
+        border-radius: 16px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
+    }
+    .admin-card {
+        background: #ffffff;
+        border: 1px solid #e6f0eb;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
+        overflow: hidden;
+    }
+    .admin-table th {
+        background: #f0f7f4 !important;
+        color: #074f3e;
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 14px 18px;
+        border-bottom: 1px solid #e6f0eb;
+    }
+    .admin-table td {
+        padding: 14px 18px;
+        vertical-align: middle;
+        font-size: 0.88rem;
+        border-bottom: 1px solid #f2f7f4;
+    }
+    .admin-table tbody tr:hover {
+        background: #f8fcf9;
+    }
+    .btn-mint-primary {
+        background: #087657;
+        color: #ffffff;
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 8px 18px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    .btn-mint-primary:hover {
+        background: #065c44;
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(8, 118, 87, 0.25);
+    }
+    .badge-soft-success { background: #e6f7f1; color: #087657; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+    .badge-soft-secondary { background: #f3f4f6; color: #6b7280; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+    .badge-soft-info { background: #e0f2fe; color: #0284c7; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+</style>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="GET" class="row g-3">
-                <div class="col-md-8">
-                    <input type="text" class="form-control" name="search" placeholder="{{ __('Search species...') }}" value="{{ request('search') }}">
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-outline-secondary w-100"><i class="bi bi-search me-1"></i>{{ __('Filter') }}</button>
-                </div>
-                <div class="col-md-2">
-                    <a href="{{ route('admin.species.index') }}" class="btn btn-outline-danger w-100"><i class="bi bi-x"></i></a>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>{{ __('Name') }}</th>
-                            <th>{{ __('Description') }}</th>
-                            <th>{{ __('Breeds') }}</th>
-                            <th>{{ __('Status') }}</th>
-                            <th class="text-end">{{ __('Actions') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($species as $item)
-                            <tr>
-                                <td class="fw-medium">{{ $item->name }}</td>
-                                <td>{{ $item->description ?? '-' }}</td>
-                                <td>{{ $item->breeds_count }}</td>
-                                <td>
-                                    @if ($item->status === 'active')
-                                        <span class="badge bg-success">{{ __('Active') }}</span>
-                                    @else
-                                        <span class="badge bg-secondary">{{ __('Inactive') }}</span>
-                                    @endif
-                                </td>
-                                <td class="text-end">
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="{{ route('admin.species.edit', $item) }}" class="btn btn-outline-primary"><i class="bi bi-pencil"></i></a>
-                                        @if ($item->breeds_count === 0 && $item->pets()->count() === 0)
-                                            <form action="{{ route('admin.species.destroy', $item) }}" method="POST" class="d-inline" onsubmit="return confirm()">
-                                                @csrf @method('DELETE')
-                                                <button class="btn btn-outline-danger"><i class="bi bi-trash"></i></button>
-                                            </form>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="5" class="text-center py-4 text-muted">{{ __('No species found.') }}</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
+<!-- Header Banner -->
+<div class="admin-page-header d-flex justify-content-between align-items-center">
+    <div>
+        <div class="d-flex align-items-center gap-2">
+            <div class="p-2 rounded-3 text-success" style="background:#e6f7f1;">
+                <i class="bi bi-bug-fill fs-5"></i>
+            </div>
+            <div>
+                <h4 class="mb-0 fw-bold text-dark">{{ __('Pet Species Directory') }}</h4>
+                <small class="text-muted">{{ __('Manage animal species categories used across veterinarians and owner pets.') }}</small>
             </div>
         </div>
-        @if ($species->hasPages())
-            <div class="card-footer bg-white">{{ $species->links() }}</div>
-        @endif
     </div>
+    <a href="{{ route('admin.species.create') }}" class="btn-mint-primary">
+        <i class="bi bi-plus-lg me-1"></i> {{ __('Add New Species') }}
+    </a>
+</div>
+
+<!-- Search Filter -->
+<div class="admin-card mb-4 p-3" style="background:#fafdfb;">
+    <form method="GET" class="row g-2 align-items-center">
+        <div class="col-md-8">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted" style="border-color:#d4ebe2;"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control border-start-0 ps-0" name="search" style="border-color:#d4ebe2;" placeholder="{{ __('Search by species name...') }}" value="{{ request('search') }}">
+            </div>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-success w-100 fw-semibold rounded-3" style="background:#087657; border-color:#087657;"><i class="bi bi-filter me-1"></i>{{ __('Filter') }}</button>
+        </div>
+        <div class="col-md-2">
+            <a href="{{ route('admin.species.index') }}" class="btn btn-outline-secondary w-100 rounded-3"><i class="bi bi-arrow-counterclockwise me-1"></i>{{ __('Reset') }}</a>
+        </div>
+    </form>
+</div>
+
+<!-- Species Table -->
+<div class="admin-card">
+    <div class="table-responsive">
+        <table class="table admin-table mb-0">
+            <thead>
+                <tr>
+                    <th>{{ __('Species Name') }}</th>
+                    <th>{{ __('Description') }}</th>
+                    <th>{{ __('Breeds Count') }}</th>
+                    <th>{{ __('Status') }}</th>
+                    <th class="text-end">{{ __('Actions') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($species as $item)
+                    <tr>
+                        <td class="fw-bold text-dark">
+                            <i class="bi bi-paw me-2 text-success" style="opacity:0.7;"></i>{{ $item->name }}
+                        </td>
+                        <td class="text-muted">{{ $item->description ?? '-' }}</td>
+                        <td>
+                            <span class="badge-soft-info"><i class="bi bi-tag me-1"></i>{{ $item->breeds_count }} {{ __('breeds') }}</span>
+                        </td>
+                        <td>
+                            @if ($item->status === 'active')
+                                <span class="badge-soft-success"><i class="bi bi-check-circle me-1"></i>{{ __('Active') }}</span>
+                            @else
+                                <span class="badge-soft-secondary">{{ __('Inactive') }}</span>
+                            @endif
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ route('admin.species.edit', $item) }}" class="btn btn-light border text-primary rounded-2 me-1" title="Edit"><i class="bi bi-pencil"></i></a>
+                                @if ($item->breeds_count === 0 && $item->pets()->count() === 0)
+                                    <form action="{{ route('admin.species.destroy', $item) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this species?')">
+                                        @csrf @method('DELETE')
+                                        <button class="btn btn-light border text-danger rounded-2" title="Delete"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-folder-x fs-2 d-block mb-2 text-muted" style="opacity:0.4;"></i>
+                            {{ __('No species found matching your criteria.') }}
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    @if ($species->hasPages())
+        <div class="p-3 border-top bg-white">{{ $species->links() }}</div>
+    @endif
+</div>
 @endsection
