@@ -4,10 +4,10 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{{ __('Pricing') }} - {{ config('app.name') }}</title>
-        @vite(['resources/css/app.scss', 'resources/js/app.js'])
+        <link rel="stylesheet" href="{{ asset('css/inner-pages.css') }}">
     </head>
     <body>
-        @include('partials.public-navbar')
+        @include('partials.furshield-navbar', ['activePage' => 'pricing'])
 
         <section class="py-5 bg-light">
             <div class="container py-5">

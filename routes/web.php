@@ -5,13 +5,17 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PublicController;
 
 // ─── Public Pages ────────────────────────────────────────
-Route::get('/', [PublicController::class, 'home'])->name('home');
-Route::get('/about', [PublicController::class, 'about'])->name('about');
-Route::get('/products', [PublicController::class, 'products'])->name('products');
-Route::get('/care', [PublicController::class, 'care'])->name('care');
-Route::get('/vets', [PublicController::class, 'vets'])->name('vets');
-Route::get('/shelters', [PublicController::class, 'shelters'])->name('shelters');
-Route::get('/contact', [PublicController::class, 'contact'])->name('contact');
+Route::middleware(['guest.public'])->group(function () {
+    Route::get('/', [PublicController::class, 'home'])->name('home');
+    Route::get('/about', [PublicController::class, 'about'])->name('about');
+    Route::get('/products', [PublicController::class, 'products'])->name('products');
+    Route::get('/care', [PublicController::class, 'care'])->name('care');
+    Route::get('/vets', [PublicController::class, 'vets'])->name('vets');
+    Route::get('/shelters', [PublicController::class, 'shelters'])->name('shelters');
+    Route::get('/contact', [PublicController::class, 'contact'])->name('contact');
+    Route::get('/services', function () { return view('public.services'); })->name('public.services');
+    Route::get('/pricing', function () { return view('public.pricing'); })->name('public.pricing');
+});
 
 Route::post('/contact', [\App\Http\Controllers\ContactController::class, 'store'])->name('contact.store');
 

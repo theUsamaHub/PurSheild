@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\IpRestrictionMiddleware;
 use App\Http\Middleware\MaintenanceModeMiddleware;
+use App\Http\Middleware\RedirectAuthenticatedFromPublic;
 use App\Middleware\CheckPermission;
 use App\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
@@ -37,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => CheckPermission::class,
             'ip-restrict' => IpRestrictionMiddleware::class,
+            'guest.public' => RedirectAuthenticatedFromPublic::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

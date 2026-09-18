@@ -377,40 +377,14 @@
 
                 </button>
 
-                <button class="filter-btn"
-                        data-filter="food">
+                @foreach($categories as $category)
+                    <button class="filter-btn"
+                            data-filter="{{ Str::slug($category->name) }}">
 
-                    Food
+                        {{ $category->name }}
 
-                </button>
-
-                <button class="filter-btn"
-                        data-filter="hygiene">
-
-                    Hygiene
-
-                </button>
-
-                <button class="filter-btn"
-                        data-filter="toys">
-
-                    Toys
-
-                </button>
-
-                <button class="filter-btn"
-                        data-filter="comfort">
-
-                    Comfort
-
-                </button>
-
-                <button class="filter-btn"
-                        data-filter="wellness">
-
-                    Wellness
-
-                </button>
+                    </button>
+                @endforeach
 
             </div>
 
@@ -433,7 +407,7 @@
         <div class="products-grid" id="productsGrid">
             @forelse($products as $product)
             <article class="vip-product-card reveal-up"
-                     data-category="{{ strtolower($product->category?->name ?? 'general') }}"
+                     data-category="{{ Str::slug($product->category?->name ?? 'general') }}"
                      data-name="{{ strtolower($product->name) }}">
 
                 <div class="product-card-shine"></div>
@@ -485,14 +459,20 @@
                         </div>
 
                         @auth
-                            <form method="POST" action="{{ route('owner.cart.add') }}" style="display:inline;">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                <input type="hidden" name="quantity" value="1">
-                                <button type="submit" class="add-cart-btn" aria-label="Add to Cart">
-                                    <i class="fa-solid fa-plus"></i>
-                                </button>
-                            </form>
+                            @if(auth()->user()->hasRole('owner'))
+                                <form method="POST" action="{{ route('owner.cart.add') }}" style="display:inline;">
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="add-cart-btn" aria-label="Add to Cart">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </form>
+                            @else
+                                <a href="{{ route('login') }}" class="add-cart-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;" aria-label="Only Pet Owners can buy" title="Only Pet Owners can add products to cart">
+                                    <i class="fa-solid fa-lock"></i>
+                                </a>
+                            @endif
                         @else
                             <a href="{{ route('login') }}" class="add-cart-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;" aria-label="Login to Buy">
                                 <i class="fa-solid fa-plus"></i>
@@ -647,16 +627,21 @@
             </div>
 
 
-            <button class="featured-cart-btn magnetic-btn add-cart-btn"
-                    data-name="Daily Pet Vitamins"
-                    data-price="2750"
-                    data-image="{{ asset('images/vitamins.jpg') }}">
-
-                <i class="fa-solid fa-bag-shopping"></i>
-
-                Add To Cart
-
-            </button>
+            @auth
+                @if(auth()->user()->hasRole('owner'))
+                    <a href="{{ route('owner.products.index') }}" class="featured-cart-btn magnetic-btn add-cart-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
+                        <i class="fa-solid fa-bag-shopping"></i> Add To Cart
+                    </a>
+                @else
+                    <a href="{{ route('login') }}" class="featured-cart-btn magnetic-btn add-cart-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
+                        <i class="fa-solid fa-lock"></i> Owner Login Required
+                    </a>
+                @endif
+            @else
+                <a href="{{ route('login') }}" class="featured-cart-btn magnetic-btn add-cart-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
+                    <i class="fa-solid fa-bag-shopping"></i> Add To Cart
+                </a>
+            @endauth
 
         </div>
 
@@ -696,17 +681,18 @@
 
         <div class="category-showcase">
 
+            @foreach($categories as $category)
             <div class="category-showcase-card reveal-up"
-                 data-target-filter="food">
+                 data-target-filter="{{ Str::slug($category->name) }}">
 
                 <div class="category-icon">
-                    <i class="fa-solid fa-bowl-food"></i>
+                    <i class="fa-solid fa-layer-group"></i>
                 </div>
 
-                <h3>Nutrition</h3>
+                <h3>{{ $category->name }}</h3>
 
                 <p>
-                    Daily food and nutrition essentials.
+                    {{ Str::limit($category->description ?? 'Quality '.$category->name.' products for your pets.', 60) }}
                 </p>
 
                 <span>
@@ -715,69 +701,7 @@
                 </span>
 
             </div>
-
-
-            <div class="category-showcase-card reveal-up"
-                 data-target-filter="hygiene">
-
-                <div class="category-icon">
-                    <i class="fa-solid fa-pump-soap"></i>
-                </div>
-
-                <h3>Grooming</h3>
-
-                <p>
-                    Keep pets clean, fresh and comfortable.
-                </p>
-
-                <span>
-                    Explore
-                    <i class="fa-solid fa-arrow-right"></i>
-                </span>
-
-            </div>
-
-
-            <div class="category-showcase-card reveal-up"
-                 data-target-filter="toys">
-
-                <div class="category-icon">
-                    <i class="fa-solid fa-bone"></i>
-                </div>
-
-                <h3>Play & Toys</h3>
-
-                <p>
-                    Fun enrichment and interactive play.
-                </p>
-
-                <span>
-                    Explore
-                    <i class="fa-solid fa-arrow-right"></i>
-                </span>
-
-            </div>
-
-
-            <div class="category-showcase-card reveal-up"
-                 data-target-filter="wellness">
-
-                <div class="category-icon">
-                    <i class="fa-solid fa-heart-pulse"></i>
-                </div>
-
-                <h3>Wellness</h3>
-
-                <p>
-                    Products supporting everyday wellbeing.
-                </p>
-
-                <span>
-                    Explore
-                    <i class="fa-solid fa-arrow-right"></i>
-                </span>
-
-            </div>
+            @endforeach
 
         </div>
 

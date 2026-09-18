@@ -34,7 +34,10 @@
 
         </nav>
 
-        <div class="inner-nav-actions">
+        <div class="inner-nav-actions" style="display: flex; align-items: center; gap: 1rem;">
+            <a href="{{ route('login') }}" class="nav-cart-btn" title="View Cart" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.15); color: #ffffff; text-decoration: none; font-size: 1.1rem; transition: all 0.3s ease;">
+                <i class="fa-solid fa-cart-shopping" style="color: #ffffff;"></i>
+            </a>
             @auth
                 <a href="{{ url('/dashboard') }}" class="nav-register">
                     <i class="fa-solid fa-gauge"></i> Dashboard
@@ -63,6 +66,7 @@
         <a href="{{ route('vets') }}"    {{ ($activePage ?? '') === 'vets'     ? 'class=active' : '' }}>Vets</a>
         <a href="{{ route('shelters') }}"{{ ($activePage ?? '') === 'shelters' ? 'class=active' : '' }}>Shelters</a>
         <a href="{{ route('contact') }}" {{ ($activePage ?? '') === 'contact'  ? 'class=active' : '' }}>Contact</a>
+        <a href="{{ route('login') }}"   style="display: flex; align-items: center; gap: 0.5rem; color: #ffffff;"><i class="fa-solid fa-cart-shopping" style="color: #ffffff;"></i> Cart</a>
 
         @auth
             <a href="{{ url('/dashboard') }}" class="nav-register" style="text-align:center; margin-top:1rem;">

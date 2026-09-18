@@ -28,6 +28,9 @@
     <link rel="stylesheet"
           href="{{ asset('css/furshield.css') }}">
 
+    <link rel="stylesheet"
+          href="{{ asset('css/inner-pages.css') }}">
+
 </head>
 
 <body>
@@ -38,117 +41,7 @@
      NAVBAR
 ===================================================== -->
 
-<header class="navbar" id="navbar">
-
-    <div class="nav-wrapper">
-
-        <a href="{{ url('/') }}" class="brand">
-
-            <div class="brand-icon">
-                <i class="fa-solid fa-paw"></i>
-            </div>
-
-            <div class="brand-info">
-                <strong>FurShield</strong>
-
-                <small>
-                    Every Paw/Wing Deserves a Shield of Love
-                </small>
-            </div>
-
-        </a>
-
-
-        <nav class="desktop-nav">
-
-            <a href="#home" class="active">Home</a>
-            <a href="{{ route('about') }}">About</a>
-
-            <a href="{{ route('products') }}">Products</a>
-            <a href="{{ route('care') }}">Care</a>
-            <a href="{{ route('vets') }}">Vets</a>
-            <a href="{{ route('shelters') }}">Shelters</a>
-            <a href="{{ route('contact') }}">Contact</a>
-
-        </nav>
-
-
-        <div class="nav-right">
-
-            <button class="nav-search">
-                <i class="fa-solid fa-magnifying-glass"></i>
-            </button>
-
-            <button class="nav-cart">
-
-                <i class="fa-solid fa-cart-shopping"></i>
-
-                <span>0</span>
-
-            </button>
-
-            @auth
-                <a href="{{ url('/dashboard') }}"
-                   class="register-btn">
-                    <i class="fa-solid fa-gauge"></i> Dashboard
-                </a>
-            @else
-                <a href="{{ route('login') }}"
-                   class="login-btn">
-                    Login
-                </a>
-
-                <a href="{{ route('register') }}"
-                   class="register-btn">
-                    Register
-                </a>
-            @endauth
-
-        </div>
-
-
-        <button class="mobile-toggle"
-                onclick="toggleMobileMenu()">
-
-            <i class="fa-solid fa-bars"></i>
-
-        </button>
-
-    </div>
-
-
-    <div class="mobile-nav" id="mobileNav">
-
-        <a href="{{ route('home') }}">Home</a>
-        <a href="{{ route('about') }}">About</a>
-
-        <a href="{{ route('products') }}">Products</a>
-        <a href="{{ route('care') }}">Care</a>
-        <a href="{{ route('vets') }}">Vets</a>
-        <a href="{{ route('shelters') }}">Shelters</a>
-        <a href="{{ route('contact') }}">Contact</a>
-
-        <div class="mobile-buttons">
-
-            @auth
-                <a href="{{ url('/dashboard') }}">
-                    Dashboard
-                </a>
-            @else
-                <a href="{{ route('login') }}">
-                    Login
-                </a>
-
-                <a href="{{ route('register') }}">
-                    Register
-                </a>
-            @endauth
-
-        </div>
-
-    </div>
-
-</header>
+@include('partials.furshield-navbar', ['activePage' => 'home'])
 
 
 <!-- =====================================================
@@ -528,7 +421,7 @@
 
             </p>
 
-            <a href="#">
+            <a href="{{ route('login') }}">
 
                 Explore
 
@@ -572,7 +465,7 @@
 
             </p>
 
-            <a href="#">
+            <a href="{{ route('login') }}">
 
                 Explore
 
@@ -616,7 +509,7 @@
 
             </p>
 
-            <a href="#">
+            <a href="{{ route('login') }}">
 
                 Book Now
 
@@ -660,7 +553,7 @@
 
             </p>
 
-            <a href="#">
+            <a href="{{ route('login') }}">
 
                 Adopt Now
 
