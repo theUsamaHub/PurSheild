@@ -421,7 +421,7 @@
 
             </p>
 
-            <a href="#">
+            <a href="{{ route('login') }}">
 
                 Explore
 
@@ -465,7 +465,7 @@
 
             </p>
 
-            <a href="#">
+            <a href="{{ route('login') }}">
 
                 Explore
 
@@ -509,7 +509,7 @@
 
             </p>
 
-            <a href="#">
+            <a href="{{ route('login') }}">
 
                 Book Now
 
@@ -553,7 +553,7 @@
 
             </p>
 
-            <a href="#">
+            <a href="{{ route('login') }}">
 
                 Adopt Now
 
