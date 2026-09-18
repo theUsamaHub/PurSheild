@@ -485,14 +485,20 @@
                         </div>
 
                         @auth
-                            <form method="POST" action="{{ route('owner.cart.add') }}" style="display:inline;">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                <input type="hidden" name="quantity" value="1">
-                                <button type="submit" class="add-cart-btn" aria-label="Add to Cart">
-                                    <i class="fa-solid fa-plus"></i>
-                                </button>
-                            </form>
+                            @if(auth()->user()->hasRole('owner'))
+                                <form method="POST" action="{{ route('owner.cart.add') }}" style="display:inline;">
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="add-cart-btn" aria-label="Add to Cart">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </form>
+                            @else
+                                <a href="{{ route('login') }}" class="add-cart-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;" aria-label="Only Pet Owners can buy" title="Only Pet Owners can add products to cart">
+                                    <i class="fa-solid fa-lock"></i>
+                                </a>
+                            @endif
                         @else
                             <a href="{{ route('login') }}" class="add-cart-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;" aria-label="Login to Buy">
                                 <i class="fa-solid fa-plus"></i>
@@ -647,16 +653,21 @@
             </div>
 
 
-            <button class="featured-cart-btn magnetic-btn add-cart-btn"
-                    data-name="Daily Pet Vitamins"
-                    data-price="2750"
-                    data-image="{{ asset('images/vitamins.jpg') }}">
-
-                <i class="fa-solid fa-bag-shopping"></i>
-
-                Add To Cart
-
-            </button>
+            @auth
+                @if(auth()->user()->hasRole('owner'))
+                    <a href="{{ route('owner.products.index') }}" class="featured-cart-btn magnetic-btn add-cart-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
+                        <i class="fa-solid fa-bag-shopping"></i> Add To Cart
+                    </a>
+                @else
+                    <a href="{{ route('login') }}" class="featured-cart-btn magnetic-btn add-cart-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
+                        <i class="fa-solid fa-lock"></i> Owner Login Required
+                    </a>
+                @endif
+            @else
+                <a href="{{ route('login') }}" class="featured-cart-btn magnetic-btn add-cart-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
+                    <i class="fa-solid fa-bag-shopping"></i> Add To Cart
+                </a>
+            @endauth
 
         </div>
 

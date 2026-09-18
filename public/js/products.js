@@ -928,6 +928,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 "click",
                 event => {
 
+                    if (button.tagName === "A" || button.type === "submit" || button.closest("form")) {
+                        return;
+                    }
+
                     event.preventDefault();
 
 
