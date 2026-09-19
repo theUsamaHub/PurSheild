@@ -230,48 +230,80 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
 
-    registerForm?.addEventListener(
-        "submit",
-        event => {
+    // registerForm?.addEventListener(
+    //     "submit",
+    //     event => {
+
+    //         event.preventDefault();
+
+
+    //         const password =
+    //             document.getElementById(
+    //                 "registerPassword"
+    //             );
+
+    //         const confirm =
+    //             document.getElementById(
+    //                 "confirmPassword"
+    //             );
+
+
+    //         if (
+    //             password
+    //             && confirm
+    //             && password.value
+    //                 !== confirm.value
+    //         ) {
+
+    //             showToast(
+    //                 "Passwords do not match."
+    //             );
+
+    //             return;
+
+    //         }
+
+
+    //         showToast(
+    //             "Registration UI is ready. Connect your Laravel backend next."
+    //         );
+
+    //     }
+    // );
+
+registerForm?.addEventListener(
+    "submit",
+    event => {
+
+        const password =
+            document.getElementById(
+                "registerPassword"
+            );
+
+        const confirm =
+            document.getElementById(
+                "confirmPassword"
+            );
+
+        if (
+            password
+            && confirm
+            && password.value !== confirm.value
+        ) {
 
             event.preventDefault();
 
-
-            const password =
-                document.getElementById(
-                    "registerPassword"
-                );
-
-            const confirm =
-                document.getElementById(
-                    "confirmPassword"
-                );
-
-
-            if (
-                password
-                && confirm
-                && password.value
-                    !== confirm.value
-            ) {
-
-                showToast(
-                    "Passwords do not match."
-                );
-
-                return;
-
-            }
-
-
             showToast(
-                "Registration UI is ready. Connect your Laravel backend next."
+                "Passwords do not match."
             );
 
+            return;
         }
-    );
 
-
+        // Do NOT prevent the default submission.
+        // Laravel will receive the POST request.
+    }
+);
 
     /* AUTH PARTICLES */
 
